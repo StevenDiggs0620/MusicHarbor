@@ -2,7 +2,7 @@
 
 **Repository setup:** [GitHub upload instructions](GITHUB_UPLOAD_GUIDE.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Current interface](INTERFACE_CHANGES.md)
 
-Current version: **1.3.0**. Local packaging passed; the current application and regression tests have not been run. GitHub checks are manual until explicitly started. No source license has been selected.
+Current version: **1.3.0**. The project code is licensed under the GNU General Public License v3.0 or, at your option, any later version; see [LICENSE](LICENSE). Third-party dependencies retain their respective licenses. Local packaging passed; the current application and regression tests have not been run. GitHub checks are manual until explicitly started.
 
 Formerly Playlist Purchaser. Existing collections, settings, and older backups remain supported; see [rebranding and compatibility notes](REBRANDING.md). New installations use the data paths below; upgrades reuse their existing data folder.
 

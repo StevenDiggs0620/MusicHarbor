@@ -6,7 +6,7 @@ Use the clean MusicHarbor folder inside github-upload, or extract MusicHarbor-so
 
 The upload copy excludes virtual environments, generated app bundles, old releases, build output, generated spec files, caches, logs, the local usability screenshot, and macOS metadata. No user database, saved credentials, or music files are needed. Keep working from one chosen source copy after publishing to avoid editing the old folder by mistake.
 
-No repository has been created, no commit or upload has been made, and no license has been selected. No app, test, linter, or build was run during this preparation. Only file inspection, editing, copying, archive creation, and archive checks were performed.
+The repository was created as a private GitHub repository and the v1.3.0 source and tag were uploaded. This guide records the initial setup process. The v1.3.0 app and regression tests have not been run on this revision; local packaging alone is not runtime verification.
 
 ## Recommended: GitHub Desktop
 
@@ -48,7 +48,7 @@ Replace YOUR-USERNAME with your account or organization. Authenticate using GitH
 - The workflow is manual, so upload alone does not execute tests or builds. When ready, open Actions → Test and package → Run workflow on main. This performs tests and packaging on GitHub, including dependency downloads. Review failures before calling the release verified.
 - After a successful run, workflow artifacts are available on its run page. They are not automatically published as Releases.
 - Consider enabling private vulnerability reporting and available secret scanning/push protection in repository settings. Availability depends on the repository/account.
-- Choose a license before offering reuse rights. None has been selected or added. Keep third-party dependency notices when distributing bundled software.
+- The source is licensed under GNU GPL v3.0 or any later version; see LICENSE. Keep third-party dependency notices when distributing bundled software.
 
 ## Optional: publish a downloadable desktop app
 

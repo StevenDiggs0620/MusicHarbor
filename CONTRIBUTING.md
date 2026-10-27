@@ -34,4 +34,4 @@ Describe the problem, behavior change, and actual validation performed. Preserve
 
 ## Licensing
 
-The owner has not chosen a source license. Do not describe this project as licensed open source or add a license on the owner's behalf. Third-party packages retain their respective licenses.
+MusicHarbor is licensed under the GNU General Public License v3.0 or, at your option, any later version. Contributions should only be submitted when you have the right to license them under those terms. Third-party packages retain their respective licenses.
