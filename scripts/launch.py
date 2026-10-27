@@ -1,12 +1,13 @@
-"""Cross-platform first-run setup and launch. Invoked by the desktop launch files."""
-import hashlib
+"""Cross-platform first-run setup and launch."""
 import os
 from pathlib import Path
 import socket
 import subprocess
 import sys
 
-ROOT=Path(__file__).resolve().parent
+ROOT=Path(__file__).resolve().parents[1]
+SOURCE=ROOT/'src'
+sys.path.insert(0,str(SOURCE))
 
 
 def main():
@@ -23,7 +24,9 @@ def main():
     from musicharbor.runtime_setup import ensure_runtime
     python=ensure_runtime(base,ROOT)
     print('Opening MusicHarbor in its own window…',flush=True)
-    subprocess.run([str(python),str(ROOT/'desktop.py')],cwd=ROOT,check=True)
+    environment=os.environ.copy()
+    environment['PYTHONPATH']=os.pathsep.join(filter(None,(str(SOURCE),environment.get('PYTHONPATH',''))))
+    subprocess.run([str(python),'-m','musicharbor'],cwd=ROOT,env=environment,check=True)
 
 
 if __name__=='__main__':

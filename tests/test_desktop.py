@@ -2,7 +2,7 @@
 from types import SimpleNamespace
 import sys
 import pytest
-import desktop
+import musicharbor.desktop as desktop
 
 
 def test_folder_dialog_is_local_only_and_handles_cancel(monkeypatch):

@@ -2,7 +2,7 @@
 
 **Project docs:** [GitHub upload instructions](docs/GITHUB_UPLOAD_GUIDE.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Interface notes](docs/INTERFACE_CHANGES.md)
 
-Current version: **1.3.0**. The project code is licensed under the GNU General Public License v3.0 or, at your option, any later version; see [LICENSE](LICENSE). Third-party dependencies retain their respective licenses. Local packaging passed; the current application and regression tests have not been run. GitHub checks are manual until explicitly started.
+Current version: **1.3.0**. The project code is licensed under the GNU General Public License v3.0 or, at your option, any later version; see [LICENSE](LICENSE). Third-party dependencies retain their respective licenses. The reorganized source built successfully on macOS. Checks on this revision: 182 passed and 4 existing failures reproduced on the previous layout; the packaged runtime smoke check could not run because port 8765 was already in use. GitHub checks are manual until explicitly started.
 
 Formerly Playlist Purchaser. Existing collections, settings, and older backups remain supported; see [rebranding and compatibility notes](docs/REBRANDING.md). New installations use the data paths below; upgrades reuse their existing data folder.
 
@@ -17,7 +17,7 @@ A local desktop application for finding purchase options for Spotify playlist re
 You can use the complete import → match → purchase-plan → ownership → local-file export workflow without configuring Spotify credentials. File import does not contact Spotify. Catalog discovery still needs an internet connection to query the iTunes Store.
 
 1. Open [Exportify](https://exportify.net), authorize it as needed, and export your playlist as a CSV. If you already have the CSV, start at step 2.
-2. Double-click **MusicHarbor.app** (macOS desktop build), or start from source with `python3 launch.py` (Windows: `py -3 launch.py`).
+2. Double-click **MusicHarbor.app** (macOS desktop build), or start from source with `python3 scripts/launch.py` (Windows: `py -3 scripts/launch.py`).
 3. Open **Import Playlist**. The **Import your Exportify playlist** panel appears first.
 4. Choose your CSV, check the project name, and choose your purchase storefront.
 5. Click **Import a File** to preview the contents. This step does not create a project.
@@ -73,7 +73,7 @@ Importing another CSV can create a new project or update the selected project th
 
 ## Current delivery status
 
-The application includes automated tests, launchers, and a GitHub Actions workflow for checks and desktop packaging. Desktop release bundles have not been signed or notarized. The active interface is in `static/ui.*`; unused prototype files have been removed.
+The application includes automated tests, launchers, and a GitHub Actions workflow for checks and desktop packaging. Desktop release bundles have not been signed or notarized. The active interface is in `src/musicharbor/static/`; unused prototype files have been removed.
 
 ## Start the application
 
@@ -94,35 +94,35 @@ Install **Python 3.11 or newer** from [python.org](https://www.python.org/downlo
 Recommended first launch from this folder:
 
 ```sh
-python3 launch.py
+python3 scripts/launch.py
 ```
 
 On Windows:
 
 ```powershell
-py -3 launch.py
+py -3 scripts/launch.py
 ```
 
 The source launcher creates an isolated runtime, installs dependencies when needed, and opens a dedicated MusicHarbor window. Closing the app stops its server. The first source launch requires an internet connection. Linux requires a pywebview-compatible GTK/WebKit or Qt runtime installed by the operating system.
 
 Platform launch files:
 
-- Windows: double-click `Start MusicHarbor.bat`.
-- macOS: `Start MusicHarbor.command` is supplied. Source-file creation does not set its executable permission. Enable it once with `chmod +x "Start MusicHarbor.command"`, or use `python3 launch.py`.
-- Linux: run `sh start.sh`.
+- Windows: double-click `scripts/start_windows.bat`.
+- macOS: double-click `scripts/start_macos.command`. If needed, enable it once with `chmod +x scripts/start_macos.command`, or run `python3 scripts/launch.py`.
+- Linux: run `sh scripts/start_linux.sh`.
 
 Manual installation, if you prefer managing the runtime:
 
 ```sh
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install -r requirements.txt
-python app.py
+python -m pip install -e .
+python -m musicharbor.app
 ```
 
-Windows virtual-environment activation is `.venv\Scripts\activate`. `python desktop.py` opens the desktop window; `python app.py` uses your browser, and `python app.py --no-browser` starts only the local server.
+Windows virtual-environment activation is `.venv\Scripts\activate`. `python -m musicharbor` opens the desktop window; `python -m musicharbor.app` uses your browser, and `python -m musicharbor.app --no-browser` starts only the local server.
 
-If Python cannot install SciPy, use a supported 64-bit CPython version with available SciPy wheels; Python 3.12 is the packaging workflow's target. Dependencies are bounded to compatible major versions, not frozen to a validated release lockfile.
+If Python cannot install SciPy, use a supported 64-bit CPython version with available SciPy wheels; Python 3.12 is the packaging workflow's target. Dependencies are declared in `pyproject.toml`; the macOS release environment also has a captured package lock in `requirements/macos-release.lock`.
 
 ## Spotify setup
 
@@ -207,12 +207,12 @@ References:
 
 ## Development checks
 
-The test suite passes: **122 tests**. JavaScript syntax validation also passes.
+Run the project checks against the current working tree; historical pass counts elsewhere in this README refer to earlier revisions.
 
 ```sh
-python -m pip install -r requirements-dev.txt
+python -m pip install -e ".[dev]"
 python -m pytest -q
-node --check static/ui.js
+node --check src/musicharbor/static/ui.js
 ```
 
 Tests cover optimization objectives, missing/invalid prices, partial ownership, version and explicitness safeguards, project isolation, credential exposure, local request protections, OAuth state, playlist import ordering, and exports with real file paths. Test HTTP traffic uses FastAPI's in-process test client; Spotify import fixtures are mocked. Real account authorization and Store responses still need integration verification.
@@ -223,7 +223,7 @@ CSV regression tests additionally cover the supplied Exportify example, older he
 
 ### Before you start
 
-1. Download and extract the complete project source, or clone its repository. You need the folder containing `build.py`, `desktop.py`, `requirements-dev.txt`, and `static/`.
+1. Download and extract the complete project source, or clone its repository. The project root contains `pyproject.toml`, `tools/build.py`, and `src/musicharbor/`.
 2. Install **64-bit Python 3.11 or newer** from [python.org](https://www.python.org/downloads/). Python 3.12 is the version used by the packaging workflow.
 3. Have an internet connection for installing dependencies. Quit any previously built copy before rebuilding it.
 
@@ -237,8 +237,9 @@ Open Terminal. Replace the example path below with your extracted project folder
 cd "/path/to/MusicHarbor"
 python3 -m venv .venv
 .venv/bin/python -m pip install --upgrade pip
-.venv/bin/python -m pip install -r requirements-dev.txt
-.venv/bin/python build.py
+.venv/bin/python -m pip install -r requirements/macos-release.lock
+.venv/bin/python -m pip install --no-deps --no-build-isolation -e .
+.venv/bin/python tools/build.py
 ```
 
 Wait until the build reports completion. In Finder, open the project's versioned release folder shown in `dist/LATEST_RELEASE.txt` and double-click **MusicHarbor.app**. You can copy the entire `.app` into Applications. Do not extract or move files from inside the app bundle.
@@ -251,8 +252,8 @@ Open PowerShell. Replace the example path with your extracted project folder, th
 cd "C:\path\to\MusicHarbor"
 py -3 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
-.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
-.\.venv\Scripts\python.exe build.py
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\python.exe tools\build.py
 ```
 
 Open `dist\releases\<release-id>\MusicHarbor\MusicHarbor.exe`. Keep the **entire `MusicHarbor` folder** together, including `_internal`; the `.exe` alone is not sufficient. Create a shortcut to the executable for convenient access. The desktop window requires Microsoft Edge WebView2 Runtime; see [pywebview's installation requirements](https://pywebview.flowrl.com/guide/installation).
@@ -263,14 +264,14 @@ Install a supported GTK/WebKit or Qt backend using [pywebview's Linux instructio
 
 ### Updating and troubleshooting
 
-- **Rebuild after code changes:** repeat the dependency-install and `build.py` commands for your platform. The build replaces existing generated output without prompting. Quit the old app first, then replace any copy you placed in Applications or elsewhere.
+- **Rebuild after code changes:** repeat the dependency-install and `tools/build.py` commands for your platform. The build replaces existing generated output without prompting. Quit the old app first, then replace any copy you placed in Applications or elsewhere.
 - **Your data stays separate:** rebuilding does not delete projects, settings, or catalog data. The desktop app uses the same data folder as the browser version. The finished bundle includes Python and the Python packages, so end users do not need to install Python.
 - **“Already running” or port 8765 is in use:** quit the previous desktop app, or stop the old terminal server with Ctrl+C. Closing a browser tab alone does not stop that server.
 - **Missing Python or packages:** check that Python is installed and use the virtual-environment interpreter shown above. No virtual-environment activation command is needed. First-time downloads require internet access.
 - **Startup problems:** inspect `desktop.log` in the app's data folder (`~/Library/Application Support/MusicHarbor/` on macOS; `%LOCALAPPDATA%\MusicHarbor\` on Windows).
 - **Distribution:** these instructions do not provide a signed/notarized release or an installer. macOS may require approval in **System Settings → Privacy & Security** for a downloaded app you trust. Public releases need separate signing/notarization work.
 
-Installing `requirements-dev.txt` installs the build tools and test dependencies; it does not run tests. The GitHub workflow also defines cross-platform tests and packaging, but these local build instructions do not require GitHub.
+Installing the `dev` extra installs the build tools and test dependencies; it does not run tests. The macOS build uses its captured dependency lock instead. The GitHub workflow also defines cross-platform tests and packaging, but these local build instructions do not require GitHub.
 
 ## Performance, progress, and purchase order update
 
@@ -282,21 +283,22 @@ Confirming a match saves its decision independently of the subsequent release lo
 
 Recommended purchases and Owned Music group entries by release and sort by unique playlist-recording count descending, combined plays during the selected listening period descending, group price ascending, artist A–Z, then release title A–Z. When synced history is available, releases with plays come first. Releases with zero plays follow and ignore playlist-recording count, sorting by price, artist, then title. Without synced history, playlist-recording count remains first. Release type never affects the order. Group price is the sum of displayed individual-track prices or the full-release price when buying the full release; unknown prices sort after known prices when counts and plays tie. Tracks inside each group retain disc/track order. Display ordering does not change the optimizer's selected purchases or its preference for equivalent same-price album tracks over standalone singles.
 
-**Validation:** All 122 tests and JavaScript syntax validation pass. Browser checks with a separate sample database and delayed mock Store responses verified saved performance settings, immediate match confirmation, staged progress, completed history after reload, dismissal, and grouped purchases in track order. Regression tests cover concurrency limits, request reuse, complete release batches, cancellation, shared library write conflicts, and purchase ordering. Real Store traffic was not used for these checks; a completely uncached playlist can still take substantial time under Apple's request limit. Restart the app to load the update.
+**Historical validation:** An earlier source revision reported 122 tests and JavaScript syntax checks passing. Browser checks used a separate sample database and delayed mock Store responses. Those results do not validate the current revision. Real Store traffic was not used for those checks; a completely uncached playlist can still take substantial time under Apple's request limit.
 
 
 ## Source layout and publishing
 
-- `app.py`, `desktop.py`, `launch.py`: application, desktop, and first-run entry points.
-- `musicharbor/`: application modules grouped as a Python package (matching, catalog, storage, planning, imports, and related logic).
-- `build.py`, `packaged_smoke.py`: desktop packaging and opt-in packaged checks.
-- `static/`: browser interface. `tests/`: automated checks with isolated databases and mocked services.
+- `src/musicharbor/`: installable application package, including API, desktop entry point, domain modules, and web assets.
+- `scripts/`: first-run launcher and platform-specific source launchers.
+- `tools/`: desktop build entry point, PyInstaller shim, and packaged-runtime checks.
+- `tests/`: automated checks with isolated databases and mocked services.
+- `requirements/`: captured macOS release dependency lock.
 - `docs/`: project history, feature notes, interface notes, and GitHub setup documentation.
 - `.github/workflows/checks.yml`: cross-platform tests and package builds.
 
 The ignore file excludes local runtimes, databases, secrets, music, exports, and build artifacts. Do not upload project backup JSON files or your application data folder: those can contain personal playlist metadata and local file paths. No credentials or user database are required in the repository. MusicHarbor is licensed under the GNU GPL v3 or any later version; see [LICENSE](LICENSE).
 
-The latest local verification passed 122 tests and JavaScript syntax validation. Browser checks used an isolated sample database and mocked Spotify/Store responses to exercise Add, Replace, catalog reuse, and CSV duplicate preservation. Live account access and signed desktop distribution remain separate integration/release checks.
+Historical verification results above refer to earlier source revisions. Run the checks in CONTRIBUTING.md on the revision you are using before relying on them. Live account access and signed desktop distribution remain separate integration/release checks.
 
 
 ### Refresh alternative releases and prices

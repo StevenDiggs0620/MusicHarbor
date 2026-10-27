@@ -20,7 +20,7 @@ All twelve requested areas have code changes. Implementation was reviewed by rea
 ## Verification for a later authorized run
 
 - Existing and new Python checks: `python -m pytest -q`.
-- Browser checks: install `requirements-browser.txt` and the Playwright Chromium browser, then run `tests/test_browser_workflows.py`. These use mocked API responses and an isolated static server.
+- Browser checks: install the `browser` extra with `python -m pip install -e ".[browser]"` and install Playwright Chromium, then run `tests/test_browser_workflows.py`. These use mocked API responses and an isolated static server.
 - Packaged runtime: run the packaged executable with `--packaging-smoke`.
 - Native window: run it with `--window-smoke` on a desktop session. Both smoke modes use an isolated temporary database and never open the user's projects.
 - Before public release, manually exercise the native save dialog for exports/backups, external Store links, and Spotify's external-browser authorization return. These require real desktop/service interaction and are not claimed verified by the smoke modes.

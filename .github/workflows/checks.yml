@@ -22,18 +22,26 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+            requirements/macos-release.lock
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: python -m pip install -r requirements-dev.txt
+      - if: runner.os != 'macOS'
+        run: python -m pip install -e ".[dev]"
       - if: runner.os == 'macOS'
-        run: python -m pip install -r requirements-macos.lock
+        run: python -m pip install -r requirements/macos-release.lock
+      - if: runner.os == 'macOS'
+        run: python -m pip install pytest
+      - if: runner.os == 'macOS'
+        run: python -m pip install --no-deps --no-build-isolation -e .
       - run: python -m pytest -q
-      - run: node --check static/ui.js
-      - run: node --check static/workflows.js
-      - run: node --check static/guided.js
-      - run: node --check static/accessible.js
-      - run: python build.py
+      - run: node --check src/musicharbor/static/ui.js
+      - run: node --check src/musicharbor/static/workflows.js
+      - run: node --check src/musicharbor/static/guided.js
+      - run: node --check src/musicharbor/static/accessible.js
+      - run: python tools/build.py
       - if: runner.os == 'macOS'
         run: '"$(cat dist/LATEST_RELEASE.txt)/Contents/MacOS/MusicHarbor" --packaging-smoke'
       - if: runner.os == 'Linux'
@@ -51,6 +59,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m pip install -r requirements-browser.txt
+      - run: python -m pip install -e ".[browser]"
       - run: python -m playwright install --with-deps chromium
       - run: python -m pytest tests/test_browser_workflows.py -q

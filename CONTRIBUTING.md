@@ -4,7 +4,7 @@ MusicHarbor is a local desktop application. Run only one instance against a data
 
 ## Development
 
-Use Python 3.11 or newer. The release workflow uses Python 3.14 on macOS and 3.12 on Windows/Linux. Install requirements-dev.txt in a virtual environment; macOS release builds additionally require requirements-macos.lock. Browser tests use requirements-browser.txt and Playwright Chromium. See README.md for launch and packaging instructions.
+Use Python 3.11 or newer. The release workflow uses Python 3.14 on macOS and 3.12 on Windows/Linux. Install the development extras with `python -m pip install -e ".[dev]"`; macOS release builds additionally use `requirements/macos-release.lock`. Browser tests use the `browser` extra and Playwright Chromium: `python -m pip install -e ".[browser]"`. See README.md for launch and packaging instructions.
 
 Use MUSICHARBOR_DATA to select an isolated development data directory. Do not test migrations or destructive operations against your personal collection. The test fixture uses temporary databases; external service calls should be mocked.
 
@@ -12,16 +12,16 @@ When authorized to run checks:
 
 ```sh
 python -m pytest -q
-node --check static/ui.js
-node --check static/workflows.js
-node --check static/guided.js
-node --check static/accessible.js
+node --check src/musicharbor/static/ui.js
+node --check src/musicharbor/static/workflows.js
+node --check src/musicharbor/static/guided.js
+node --check src/musicharbor/static/accessible.js
 ```
 
 Browser setup and checks:
 
 ```sh
-python -m pip install -r requirements-browser.txt
+python -m pip install -e ".[browser]"
 python -m playwright install --with-deps chromium
 python -m pytest tests/test_browser_workflows.py -q
 ```

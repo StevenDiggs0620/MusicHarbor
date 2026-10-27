@@ -4,7 +4,7 @@ import copy
 import json
 from datetime import datetime, timezone, timedelta
 import pytest
-import app
+import musicharbor.app as app
 import musicharbor.store as store
 import musicharbor.services as services
 import musicharbor.portable as portable

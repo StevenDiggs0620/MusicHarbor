@@ -11,7 +11,7 @@ playwright=pytest.importorskip('playwright.sync_api')
 
 @pytest.fixture
 def browser_page():
-    root=Path(__file__).resolve().parents[1]
+    root=Path(__file__).resolve().parents[1]/'src'/'musicharbor'
     server=ThreadingHTTPServer(('127.0.0.1',0),partial(SimpleHTTPRequestHandler,directory=str(root)))
     thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
     p=dict(id='a',name='Project A',storefront='us',tracks=[],recordings={},releases={},local_files=[],exports=[],price_history=[],library_folders=[])

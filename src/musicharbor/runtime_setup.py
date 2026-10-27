@@ -35,10 +35,11 @@ def setup_lock(base):
             else: fcntl.flock(handle.fileno(),fcntl.LOCK_UN)
 
 def ensure_runtime(base,root):
-    lock=root/'requirements-macos.lock'
-    requirements=lock if sys.platform=='darwin' and sys.version_info[:2]==(3,14) and lock.exists() else root/'requirements.txt'
+    lock=root/'requirements'/'macos-release.lock'
+    use_lock=sys.platform=='darwin' and sys.version_info[:2]==(3,14) and lock.exists()
+    requirements=lock if use_lock else root/'pyproject.toml'
     identity='|'.join((sys.version,sys.implementation.name,platform.machine(),sys.platform))
-    fingerprint=hashlib.sha256(identity.encode()+requirements.read_bytes()).hexdigest()
+    fingerprint=hashlib.sha256(identity.encode()+str(root.resolve()).encode()+requirements.read_bytes()).hexdigest()
     env=base/'runtimes'/fingerprint[:24]
     relative=Path('Scripts/python.exe' if os.name=='nt' else 'bin/python')
     with setup_lock(base):
@@ -47,7 +48,11 @@ def ensure_runtime(base,root):
             staging=env.parent/('preparing-'+uuid.uuid4().hex)
             try:
                 subprocess.run([sys.executable,'-m','venv',str(staging)],check=True)
-                subprocess.run([str(staging/relative),'-m','pip','install','--disable-pip-version-check','-r',str(requirements)],check=True)
+                if use_lock:
+                    subprocess.run([str(staging/relative),'-m','pip','install','--disable-pip-version-check','-r',str(requirements)],cwd=root,check=True)
+                    subprocess.run([str(staging/relative),'-m','pip','install','--disable-pip-version-check','--no-deps','--no-build-isolation','-e',str(root)],cwd=root,check=True)
+                else:
+                    subprocess.run([str(staging/relative),'-m','pip','install','--disable-pip-version-check','-e',str(root)],cwd=root,check=True)
                 (staging/'complete').write_text(fingerprint)
                 # An incomplete old target is retained for diagnosis, never launched.
                 if env.exists(): env.rename(env.with_name(env.name+'-incomplete-'+uuid.uuid4().hex))

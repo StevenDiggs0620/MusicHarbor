@@ -4,7 +4,7 @@ import time
 
 import pytest
 
-import app
+import musicharbor.app as app
 import musicharbor.services as services
 import musicharbor.store as store
 from conftest import project_with_options, recording

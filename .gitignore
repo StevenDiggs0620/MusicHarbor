@@ -49,6 +49,7 @@ htmlcov/
 Thumbs.db
 venv/
 .mypy_cache/
+*.egg-info/
 
 # Personal workflow notes; keep local and out of GitHub.
 /AGENTS.md

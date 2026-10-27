@@ -1,4 +1,4 @@
-"""MusicHarbor: loopback-only application. Run with python app.py."""
+"""MusicHarbor loopback application and HTTP interface."""
 import asyncio
 import copy
 import json

@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 import httpx
 import pytest
-import app
+import musicharbor.app as app
 import musicharbor.services as services
 import musicharbor.store as store
 import musicharbor.matching as matching

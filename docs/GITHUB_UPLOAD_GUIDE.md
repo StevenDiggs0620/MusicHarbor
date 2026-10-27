@@ -1,65 +1,36 @@
-# Upload MusicHarbor to GitHub
+# Keeping MusicHarbor current on GitHub
 
-## What is prepared
+The published repository is `StevenDiggs0620/MusicHarbor`; its primary branch is `main`. Work from the repository folder (the one containing `.git`), review the changed files, and keep credentials, databases, music, personal exports, and generated app builds out of commits.
 
-Use the clean MusicHarbor folder inside github-upload, or extract MusicHarbor-source.zip. That folder contains the source, tests and sample fixture, dependency lists, launchers, documentation, Git ignore/line-ending rules, issue and pull-request templates, and a manual GitHub Actions workflow. UPLOAD_MANIFEST.txt lists every included file and its SHA-256 checksum (excluding the manifest itself).
+## Publish an ordinary source update
 
-The upload copy excludes virtual environments, generated app bundles, old releases, build output, generated spec files, caches, logs, the local usability screenshot, and macOS metadata. No user database, saved credentials, or music files are needed. Keep working from one chosen source copy after publishing to avoid editing the old folder by mistake.
+1. Start from the latest `main` and confirm the working tree is clean.
+2. Make the change in `src/musicharbor/`, `scripts/`, `tools/`, `tests/`, `docs/`, or the relevant project configuration.
+3. Run the checks appropriate to the change. For release-level validation, use the manual **Actions → Test and package → Run workflow** workflow and review every job.
+4. Review the final diff and file list, stage only intended files, and commit the changes.
+5. Push `main` and confirm GitHub shows the expected commit. A source push does not alter an existing release tag or downloadable app.
 
-The repository was created as a private GitHub repository and the v1.3.0 source and tag were uploaded. This guide records the initial setup process. The v1.3.0 app and regression tests have not been run on this revision; local packaging alone is not runtime verification.
+## Publish a new version
 
-## Recommended: GitHub Desktop
+Choose a new semantic version: patch for compatible fixes (for example `1.3.1`), minor for compatible features (`1.4.0`), and major for incompatible changes (`2.0.0`). Never move or reuse an existing tag.
 
-1. Install GitHub Desktop from https://desktop.github.com/ and sign in to your own GitHub account.
-2. Put the clean MusicHarbor source folder in a stable development location, preferably outside a cloud-synchronized folder. Do not use the folder containing old app builds. Extract the source ZIP first if using the archive.
-3. In GitHub Desktop, choose File → Add local repository and select the clean MusicHarbor folder. If prompted that it is not a repository, choose the option to create a repository there. Verify the resulting local path is the existing MusicHarbor folder, not another nested MusicHarbor folder. Do not generate another README, ignore file, or license.
-4. Review the Changes list. It should contain source, documentation, tests, and .github configuration. It must not include .venv, dist, build, .sqlite3 files, credentials, logs, personal exports, or music. If the creation dialog already made the initial commit, review that commit in History instead.
-5. If changes are still uncommitted, enter the summary “Prepare MusicHarbor source” and click Commit to main. If your branch is named master, rename it to main using the Branch menu.
-6. Click Publish repository. Name it MusicHarbor. Suggested description: “A local desktop workspace for matching playlists, planning music purchases, managing owned music, and exporting playlists.” Choose visibility deliberately; private is a conservative starting point. Leave “Keep this code private” checked for a private repository.
-7. Click Publish repository. Open the repository on GitHub and confirm README.md, static, tests, and .github/workflows/checks.yml are present.
+1. Update the version in `pyproject.toml`, `README.md`, `docs/REBRANDING.md`, and `tools/build.py`; update applicable release notes as well.
+2. Run the full manual GitHub Actions workflow on the release commit. It runs Python and browser checks, builds packages on macOS, Windows, and Linux, and performs packaged startup checks.
+3. Review the artifacts. Workflow artifacts are temporary downloads and are not automatically attached to a GitHub Release. Attach only the app builds that were produced for and checked against the release commit.
+4. Commit and push the release changes. Tag that exact commit with a new version such as `v1.3.1`, push the tag, and create the GitHub Release with clear notes and desired platform assets.
+5. Verify the release page, tag target, asset list, and release visibility. State any checks or platforms that were not validated.
 
-The source ZIP is a transport copy. Do not upload the ZIP as the only repository file; upload/commit its extracted contents.
+The macOS build is ad-hoc signed by default and is not notarized. Windows and Linux packages also need to be tested on the intended systems before making platform-specific compatibility claims.
 
-## Alternative: Terminal and an empty GitHub repository
+## Development install and checks
 
-Create a new repository on GitHub named MusicHarbor. Choose visibility. Leave README, .gitignore, and license initialization unchecked because the source folder already contains the first two and the license is undecided.
-
-Open Terminal in the clean source folder, then run these commands yourself:
-
-```sh
-git init -b main
-git add .
-git status --short
-git diff --cached --stat
-```
-
-Review the staged file list before continuing. If Git asks for your identity, configure your chosen name and GitHub-associated email (or GitHub's private noreply address) locally using git config user.name and git config user.email. Do not put credentials into files or remote URLs.
+Python package metadata and dependency groups live in `pyproject.toml`:
 
 ```sh
-git commit -m "Prepare MusicHarbor source"
-git remote add origin https://github.com/YOUR-USERNAME/MusicHarbor.git
-git push -u origin main
+python -m pip install -e ".[dev]"
+python -m pytest -q
 ```
 
-Replace YOUR-USERNAME with your account or organization. Authenticate using GitHub Desktop/Git Credential Manager, GitHub CLI, or SSH as appropriate; your account password is not a Git HTTPS credential. If the remote already contains commits, do not force-push over them—use an empty repository or reconcile the histories first.
+For browser checks, install `python -m pip install -e ".[browser]"` and Playwright Chromium, then run `python -m pytest tests/test_browser_workflows.py -q`. The desktop bundle is built with `python tools/build.py` on its target operating system. macOS release builds use the captured lock at `requirements/macos-release.lock`.
 
-## After upload
-
-- The workflow is manual, so upload alone does not execute tests or builds. When ready, open Actions → Test and package → Run workflow on main. This performs tests and packaging on GitHub, including dependency downloads. Review failures before calling the release verified.
-- After a successful run, workflow artifacts are available on its run page. They are not automatically published as Releases.
-- Consider enabling private vulnerability reporting and available secret scanning/push protection in repository settings. Availability depends on the repository/account.
-- The source is licensed under GNU GPL v3.0 or any later version; see LICENSE. Keep third-party dependency notices when distributing bundled software.
-
-## Optional: publish a downloadable desktop app
-
-Keep app binaries out of source commits. In GitHub, open Releases → Draft a new release, choose a tag such as v1.3.0 and the intended commit, add release notes, and attach the separately packaged MusicHarbor.zip. Save a draft while reviewing. Because current runtime checks have not been performed, describe that limitation and use a pre-release if publishing this build before validation.
-
-The previously packaged macOS ZIP was built before this repository-preparation pass. Use it only with that disclosure, or build a fresh matching package after validation. It is locally ad-hoc signed, not demonstrated to be Developer ID signed or notarized; do not advertise a notarized installer. Windows and Linux packages have not been produced locally.
-
-GitHub's automatic “Source code” archives are source snapshots, not ready-to-run apps. Upload the desktop ZIP as a separate release asset, not as a replacement for source files.
-
-## References
-
-- https://docs.github.com/en/migrations/importing-source-code/using-the-command-line-to-import-source-code/adding-locally-hosted-code-to-github
-- https://docs.github.com/en/desktop/adding-and-cloning-repositories/adding-a-repository-from-your-local-computer-to-github-desktop
-- https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository
+See the [README](../README.md) for running the app and [Contributing](../CONTRIBUTING.md) for development practices. The project is licensed under the GNU GPL v3 or any later version; third-party dependencies retain their own licenses.

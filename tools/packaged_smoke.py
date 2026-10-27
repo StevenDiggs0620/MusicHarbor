@@ -8,7 +8,7 @@ from urllib.request import urlopen
 
 def main(window=False):
     import musicharbor.store as store
-    import desktop
+    from musicharbor import desktop
     with tempfile.TemporaryDirectory(prefix='playlist-package-check-') as temporary:
         store.DATA=Path(temporary);store.DB=store.DATA/'test.sqlite3'
         os.environ['MUSICHARBOR_LEGACY']=str(store.DATA/'absent.sqlite3')

@@ -11,34 +11,41 @@ import stat
 from datetime import datetime, timezone
 from importlib.metadata import version, distributions
 
-ROOT=Path(__file__).resolve().parent
+ROOT=Path(__file__).resolve().parents[1]
+SOURCE=ROOT/'src'
+sys.path.insert(0,str(ROOT))
+sys.path.insert(0,str(SOURCE))
 arguments=[sys.executable,'-m','PyInstaller','--noconfirm','--clean','--onedir',
-           '--name','MusicHarbor','--add-data',f'{ROOT / "static"}{os.pathsep}static',
+           '--paths',str(ROOT),'--paths',str(SOURCE),
+           '--name','MusicHarbor','--add-data',f'{SOURCE / "musicharbor" / "static"}{os.pathsep}static',
            '--collect-all','scipy','--collect-all','mutagen','--hidden-import','uvicorn.logging',
+           '--hidden-import','tools.packaged_smoke',
            '--hidden-import','uvicorn.loops.auto','--hidden-import','uvicorn.protocols.http.auto',
            '--hidden-import','uvicorn.protocols.websockets.auto','--hidden-import','uvicorn.lifespan.on']
 if sys.platform in ('darwin','win32'): arguments+=['--windowed']
 if sys.platform=='darwin': arguments+=['--osx-bundle-identifier','local.musicharbor.app']
-arguments.append(str(ROOT/'desktop.py'))
+arguments.append(str(ROOT/'tools'/'desktop_entry.py'))
 
 def build():
     if sys.platform=='darwin':
-        for line in (ROOT/'requirements-macos.lock').read_text().splitlines():
+        for line in (ROOT/'requirements'/'macos-release.lock').read_text().splitlines():
             if not line or line.startswith('#'): continue
             name,expected=line.split('==',1)
             if version(name)!=expected: raise RuntimeError(f'Release dependency differs from lock: {name}. Install the release lock before packaging.')
     output=ROOT/'build';output.mkdir(exist_ok=True)
+    spec_directory=output/'spec';spec_directory.mkdir(parents=True,exist_ok=True)
     release_id=datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S-%f')
     destination=ROOT/'dist'/'releases'/release_id
     destination.mkdir(parents=True,exist_ok=False)
-    sources=list(ROOT.glob('*.py'))+list((ROOT/'musicharbor').rglob('*.py'))+list((ROOT/'static').glob('*'))
+    sources=list((ROOT/'src'/'musicharbor').rglob('*.py'))+list((ROOT/'src'/'musicharbor'/'static').glob('*'))+list((ROOT/'tools').glob('*.py'))
     manifest=dict(app='MusicHarbor',release_id=release_id,version='1.3.0',python=sys.version,platform=sys.platform,architecture=platform.machine(),
                   dependencies={d.metadata['Name']:d.version for d in distributions()},
                   sources={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sources if p.is_file()},
                   verification='Packaging only; application and regression checks not run.')
     manifest_path=output/'release-manifest.json'
     manifest_path.write_text(json.dumps(manifest,indent=2))
-    command=arguments[:-1]+['--distpath',str(destination),'--add-data',f'{manifest_path}{os.pathsep}.']+arguments[-1:]
+    command=arguments[:-1]+['--specpath',str(spec_directory),'--distpath',str(destination),
+                            '--add-data',f'{manifest_path}{os.pathsep}.']+arguments[-1:]
     env=dict(os.environ,PYINSTALLER_CONFIG_DIR=str(output/'.pyinstaller-cache'))
     subprocess.run(command,cwd=ROOT,env=env,check=True)
     if sys.platform=='darwin':

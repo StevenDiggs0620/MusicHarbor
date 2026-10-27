@@ -6,7 +6,7 @@ import threading
 from urllib.parse import parse_qs, urlparse
 
 import pytest
-import app
+import musicharbor.app as app
 import musicharbor.backup_schema as backup_schema
 import musicharbor.csv_import as csv_import
 import musicharbor.identity as identity

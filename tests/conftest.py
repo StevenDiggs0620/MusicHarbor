@@ -1,7 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 import musicharbor.store as store
-import app
+import musicharbor.app as app
 
 
 @pytest.fixture

@@ -1,9 +1,9 @@
 @echo off
-cd /d "%~dp0"
+cd /d "%~dp0.."
 where py >nul 2>nul
 if %ERRORLEVEL% EQU 0 (
-  py -3 launch.py
+  py -3 scripts\launch.py
 ) else (
-  python launch.py
+  python scripts\launch.py
 )
 if errorlevel 1 pause

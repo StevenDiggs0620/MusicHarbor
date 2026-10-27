@@ -1,9 +1,7 @@
 """Native desktop entry point; the existing loopback server stays private to this app."""
 import logging
 from logging.handlers import RotatingFileHandler
-import multiprocessing
 import socket
-import sys
 import threading
 import time
 
@@ -34,7 +32,7 @@ class FolderPicker:
 
 def start_server():
     import uvicorn
-    from app import app
+    from musicharbor.app import app
     listener = socket.socket()
     try:
         listener.bind(('127.0.0.1', 8765))
@@ -72,7 +70,7 @@ def main():
         picker._window=webview.create_window('MusicHarbor', URL, width=1280, height=850,
                               min_size=(800, 600), background_color='#f5f7f2',
                               text_select=True, zoomable=True)
-        from app import app
+        from musicharbor.app import app
         app.state.folder_picker=picker.choose_folder
         webview.start(private_mode=False, storage_path=str(store.DATA / 'desktop-browser'))
     except Exception as error:
@@ -85,7 +83,7 @@ def main():
             width=620, height=320)
         webview.start()
     finally:
-        from app import app
+        from musicharbor.app import app
         app.state.folder_picker=None
         if server:
             server.should_exit = True
@@ -95,11 +93,4 @@ def main():
 
 
 if __name__ == '__main__':
-    multiprocessing.freeze_support()
-    if '--packaging-smoke' in sys.argv or '--window-smoke' in sys.argv:
-        from packaged_smoke import main as smoke
-        try: smoke(window='--window-smoke' in sys.argv)
-        except Exception:
-            logging.exception('Packaged smoke check failed')
-            sys.exit(1)
-    else: main()
+    main()
