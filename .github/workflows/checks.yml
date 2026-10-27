@@ -1,0 +1,56 @@
+name: Test and package
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python: '3.12'
+          - os: macos-latest
+            python: '3.14'
+          - os: windows-latest
+            python: '3.12'
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: python -m pip install -r requirements-dev.txt
+      - if: runner.os == 'macOS'
+        run: python -m pip install -r requirements-macos.lock
+      - run: python -m pytest -q
+      - run: node --check static/ui.js
+      - run: node --check static/workflows.js
+      - run: node --check static/guided.js
+      - run: node --check static/accessible.js
+      - run: python build.py
+      - if: runner.os == 'macOS'
+        run: '"$(cat dist/LATEST_RELEASE.txt)/Contents/MacOS/MusicHarbor" --packaging-smoke'
+      - if: runner.os == 'Linux'
+        run: '"$(cat dist/LATEST_RELEASE.txt)/MusicHarbor" --packaging-smoke'
+      - if: runner.os == 'Windows'
+        run: '& "$(Get-Content dist/LATEST_RELEASE.txt)/MusicHarbor.exe" --packaging-smoke'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: musicharbor-${{ matrix.os }}
+          path: dist/
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements-browser.txt
+      - run: python -m playwright install --with-deps chromium
+      - run: python -m pytest tests/test_browser_workflows.py -q

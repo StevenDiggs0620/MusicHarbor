@@ -1,0 +1,38 @@
+"""Cross-platform first-run setup and launch. Invoked by the desktop launch files."""
+import hashlib
+import os
+from pathlib import Path
+import socket
+import subprocess
+import sys
+
+ROOT=Path(__file__).resolve().parent
+
+
+def main():
+    if sys.version_info < (3,11):
+        raise RuntimeError('Install Python 3.11 or newer from python.org, then open the launcher again.')
+    try:
+        with socket.socket() as probe:
+            probe.bind(('127.0.0.1',8765))
+    except OSError:
+        raise RuntimeError('Another program is using port 8765. Close it and try again.')
+    # Keep the virtual environment and database outside OneDrive / source folders.
+    from branding import data_dir
+    base=data_dir()
+    from runtime_setup import ensure_runtime
+    python=ensure_runtime(base,ROOT)
+    print('Opening MusicHarbor in its own window…',flush=True)
+    subprocess.run([str(python),str(ROOT/'desktop.py')],cwd=ROOT,check=True)
+
+
+if __name__=='__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
+    except Exception as error:
+        print(f'\nMusicHarbor could not start: {error}',file=sys.stderr)
+        print('See README.md for setup and troubleshooting.',file=sys.stderr)
+        if sys.stdin.isatty(): input('Press Enter to close…')
+        sys.exit(1)

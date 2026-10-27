@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="app-token" content="__APP_TOKEN__">
+  <title>MusicHarbor</title>
+  <link rel="stylesheet" href="/static/ui.css">
+  <link rel="stylesheet" href="/static/guided.css">
+  <script src="/static/guided.js" defer></script>
+  <script src="/static/accessible.js" defer></script>
+  <script src="/static/workflows.js" defer></script>
+  <script src="/static/ui.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <aside class="sidebar">
+    <a class="brand" href="#overview"><span class="brand-icon" aria-hidden="true">♫</span><span><strong>MusicHarbor</strong></span></a>
+    <div class="local-tag"><span aria-hidden="true">●</span> YOUR LOCAL MUSIC WORKSPACE</div>
+    <label for="project-picker">Current playlist</label>
+    <select id="project-picker"><option value="">Choose a playlist</option></select>
+    <nav aria-label="Main navigation">
+      <a href="#overview">Overview</a>
+      <a href="#songs">Playlist songs</a>
+      <a href="#review">Check matches <span id="review-count" class="badge" aria-label="Songs needing review">0</span></a>
+      <a href="#plan">Purchase plan</a>
+      <a href="#owned">My music</a>
+      <a href="#export">Export</a>
+      <div class="nav-divider"></div>
+      <a href="#projects">Manage playlists</a>
+      <a href="#settings">Settings</a>
+      <a href="#help">Help <kbd>?</kbd></a>
+    </nav>
+    <p class="sidebar-note">Your playlist. Your collection.<br>Find a better way to buy.</p>
+  </aside>
+  <div class="workspace">
+    <header class="topbar"><span id="breadcrumb">Your workspace</span><div class="actions"><a class="quiet-link" href="#import">Add playlist</a><span id="store-label" class="badge">LOCAL ONLY</span></div></header>
+    <div id="notice" role="status" aria-live="polite" hidden></div>
+    <section id="job-bar" aria-label="Operation history" hidden></section>
+    <main id="main" tabindex="-1"><p>Opening your music workspace…</p></main>
+    <footer>Prices and availability can change. Purchases happen in the Store. This app never downloads music.</footer>
+  </div>
+  <dialog id="dialog"><div id="dialog-body"></div><form method="dialog"><button class="secondary">Close</button></form></dialog>
+</body>
+</html>

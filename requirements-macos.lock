@@ -1,0 +1,36 @@
+# Exact environment used for the local macOS CPython 3.14 release.
+# Captured from installed metadata, not newly installed or runtime-validated.
+altgraph==0.17.5
+annotated-doc==0.0.5
+annotated-types==0.8.0
+anyio==4.15.1
+bottle==0.13.4
+certifi==2026.7.22
+click==8.5.0
+fastapi==0.141.1
+h11==0.16.0
+httpcore==1.0.9
+httpx==0.28.1
+idna==3.19
+macholib==1.16.4
+mutagen==1.48.1
+numpy==2.5.3
+packaging==26.3
+proxy_tools==0.1.0
+pydantic==2.13.5
+pydantic_core==2.46.5
+pyinstaller==6.22.3
+pyinstaller-hooks-contrib==2026.7
+pyobjc-core==12.2.2
+pyobjc-framework-Cocoa==12.2.2
+pyobjc-framework-Quartz==12.2.2
+pyobjc-framework-Security==12.2.2
+pyobjc-framework-UniformTypeIdentifiers==12.2.2
+pyobjc-framework-WebKit==12.2.2
+pywebview==6.2.1
+scipy==1.18.1
+setuptools==84.0.0
+starlette==1.6.0
+typing_extensions==4.16.0
+typing-inspection==0.4.4
+uvicorn==0.53.0
