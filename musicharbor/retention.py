@@ -15,7 +15,7 @@ def trim_project(p, policy):
     p['exports']=p.get('exports',[])[-policy.export_count:]
 
 def cleanup():
-    import store
+    import musicharbor.store as store
     policy=Retention.model_validate(store.setting('retention',{}))
     cutoff=(datetime.now(timezone.utc)-timedelta(days=policy.job_days)).isoformat()
     with store.connection() as c:

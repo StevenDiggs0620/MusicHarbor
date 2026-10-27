@@ -15,23 +15,15 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Resp
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from typing import Literal
-import services
-import store
-import csv_import
-import listening
-import backup_schema
-import portable
-import planning
-import library_index
-import retention
-from retention import Retention as RetentionPolicy
-from export_policy import ExportOptions, select_files
-from identity import consolidate, sync_files, summary
-from matching import owned_ids, rec_owned, rebuild_coverage, score, song_data
-from optimizer import calculate, CURRENCIES
-from progress import JobProgress, STAGES, report
-from purchase_order import purchase_groups
-from owned_music import owned_collection
+from musicharbor import backup_schema, csv_import, library_index, listening, planning, portable, retention, services, store
+from musicharbor.export_policy import ExportOptions, select_files
+from musicharbor.identity import consolidate, sync_files, summary
+from musicharbor.matching import owned_ids, rec_owned, rebuild_coverage, score, song_data
+from musicharbor.optimizer import calculate, CURRENCIES
+from musicharbor.owned_music import owned_collection
+from musicharbor.progress import JobProgress, STAGES, report
+from musicharbor.purchase_order import purchase_groups
+from musicharbor.retention import Retention as RetentionPolicy
 
 ROOT = Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parent))
 SESSION = secrets.token_urlsafe(32)

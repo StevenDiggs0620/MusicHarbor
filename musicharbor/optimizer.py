@@ -3,8 +3,8 @@ import math
 import re
 import time
 from decimal import Decimal, ROUND_HALF_UP
-from matching import rec_owned, normalize, owned_ids
-from identity import playlist_ids
+from musicharbor.matching import rec_owned, normalize, owned_ids
+from musicharbor.identity import playlist_ids
 
 CURRENCIES = {'us': 'USD', 'ca': 'CAD', 'gb': 'GBP'}
 

@@ -1,12 +1,12 @@
 import asyncio
 from types import SimpleNamespace
 import pytest
-import csv_import
-import services
-import store
-from identity import decide, consolidate, summary
-from matching import rec_owned, rebuild_coverage, score
-from optimizer import calculate
+import musicharbor.csv_import as csv_import
+import musicharbor.services as services
+import musicharbor.store as store
+from musicharbor.identity import decide, consolidate, summary
+from musicharbor.matching import rec_owned, rebuild_coverage, score
+from musicharbor.optimizer import calculate
 from conftest import recording, project_with_options
 from test_csv_import import make_csv
 

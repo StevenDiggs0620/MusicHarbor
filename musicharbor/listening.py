@@ -6,8 +6,8 @@ from collections import defaultdict
 from urllib.parse import quote
 
 import httpx
-import store
-from matching import normalize, song_data, title_base
+import musicharbor.store as store
+from musicharbor.matching import normalize, song_data, title_base
 
 WINDOW = 90 * 86400
 TASK = None

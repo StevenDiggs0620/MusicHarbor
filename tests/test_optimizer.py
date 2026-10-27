@@ -1,5 +1,5 @@
-from optimizer import calculate, cents
-from matching import rec_owned
+from musicharbor.optimizer import calculate, cents
+from musicharbor.matching import rec_owned
 from conftest import project_with_options
 
 

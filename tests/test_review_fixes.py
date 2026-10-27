@@ -7,14 +7,14 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest
 import app
-import backup_schema
-import csv_import
-import identity
-import listening
-import services
-import store
-from matching import comparison_title, rebuild_coverage, score
-from playlist_update import merge_playlist
+import musicharbor.backup_schema as backup_schema
+import musicharbor.csv_import as csv_import
+import musicharbor.identity as identity
+import musicharbor.listening as listening
+import musicharbor.services as services
+import musicharbor.store as store
+from musicharbor.matching import comparison_title, rebuild_coverage, score
+from musicharbor.playlist_update import merge_playlist
 
 
 def song(tid=1, title='Song', **changes):

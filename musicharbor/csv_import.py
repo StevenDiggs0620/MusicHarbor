@@ -12,8 +12,8 @@ from datetime import datetime
 from pathlib import PurePosixPath
 from urllib.parse import urlparse
 
-import store
-from matching import normalize
+import musicharbor.store as store
+from musicharbor.matching import normalize
 
 MAX_BYTES = 10 * 1024 * 1024
 MAX_ROWS = 20000

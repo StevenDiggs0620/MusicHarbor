@@ -1,8 +1,8 @@
 import asyncio
 import copy
 
-import services
-import store
+import musicharbor.services as services
+import musicharbor.store as store
 from conftest import recording
 
 

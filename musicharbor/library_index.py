@@ -1,6 +1,6 @@
 """Indexed library projections; project loads only fetch possible identity matches."""
 import json
-from matching import comparison_title, song_data
+from musicharbor.matching import comparison_title, song_data
 
 def keys(rec):
     result={('id',rec['id'])}
@@ -37,7 +37,7 @@ def related(c,recordings):
     return files,records
 
 def page(offset=0,limit=100):
-    import store
+    import musicharbor.store as store
     with store.connection() as c:
         total=c.execute('SELECT count(*) FROM library_files').fetchone()[0]
         matched_total=c.execute("SELECT count(*) FROM library_files WHERE json_extract(payload,'$.status')='matched'").fetchone()[0]

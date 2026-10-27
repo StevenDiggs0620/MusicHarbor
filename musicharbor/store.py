@@ -11,9 +11,9 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 
-from branding import data_dir
+from musicharbor.branding import data_dir
 
 DATA = data_dir()
 DB = DATA / ('playlist_purchaser.sqlite3' if (DATA / 'playlist_purchaser.sqlite3').exists() else 'musicharbor.sqlite3')
@@ -71,9 +71,9 @@ def init():
     except OSError:
         pass
     migrate_legacy()
-    from library_index import initialize
+    from musicharbor.library_index import initialize
     with connection() as c: initialize(c)
-    from retention import cleanup
+    from musicharbor.retention import cleanup
     cleanup()
 
 def setting(key, default=None):
@@ -94,7 +94,7 @@ def new_project(name='Untitled playlist', storefront='us', url=''):
                 local_files=[], exports=[], price_history=[], library_folders=[])
 
 def put(p):
-    from retention import Retention, trim_project
+    from musicharbor.retention import Retention, trim_project
     trim_project(p,Retention.model_validate(setting('retention',{})))
     payload=copy.deepcopy({k:v for k,v in p.items() if not k.startswith('_')})
     playlist={t['recording_id'] for t in p['tracks']}
@@ -120,7 +120,7 @@ def get(pid, full_library=False):
     if not row:
         raise ValueError('Project not found. Select an existing project.')
     p = json.loads(row['payload'])
-    from identity import attach_library
+    from musicharbor.identity import attach_library
     # Discard redundant legacy library-only copies before selecting related rows.
     playlist={t['recording_id'] for t in p['tracks']}
     retained=set(playlist)
@@ -196,7 +196,7 @@ def library(recordings_filter=None):
             files = [json.loads(r[0]) for r in c.execute('SELECT payload FROM library_files')]
             recordings = {r[0]:json.loads(r[1]) for r in c.execute('SELECT id,payload FROM library_recordings')}
         else:
-            from library_index import related
+            from musicharbor.library_index import related
             files,recordings=related(c,recordings_filter)
     # Historical shared identities can still be referenced by projects even if
     # their last file was reassigned. Keep their evidence available by ID.
@@ -227,7 +227,7 @@ def save_library(p):
             if current_version not in (recording_baseline.get(rid),version):
                 raise ValueError('This library recording changed in another project. Reload and review the latest decision before saving again.')
             c.execute('INSERT OR REPLACE INTO library_recordings VALUES (?,?)',(rid,json.dumps(rec)))
-            from library_index import index_record
+            from musicharbor.library_index import index_record
             index_record(c,rid,rec)
             updated_recordings[rid]=version
         for file in p['local_files']:

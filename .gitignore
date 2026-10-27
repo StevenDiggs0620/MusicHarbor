@@ -49,3 +49,7 @@ htmlcov/
 Thumbs.db
 venv/
 .mypy_cache/
+
+# Personal workflow notes; keep local and out of GitHub.
+/AGENTS.md
+/LOCAL_GITHUB_WORKFLOW.md

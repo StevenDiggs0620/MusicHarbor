@@ -3,8 +3,8 @@ from collections import Counter, defaultdict
 from copy import deepcopy
 import json
 
-import store
-from matching import normalize, score
+import musicharbor.store as store
+from musicharbor.matching import normalize, score
 
 FIELDS = ('title', 'artist', 'album', 'duration', 'explicit', 'isrc', 'spotify_id')
 

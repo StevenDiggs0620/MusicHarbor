@@ -1,5 +1,5 @@
 import pytest
-from matching import score, title_base, rebuild_coverage
+from musicharbor.matching import score, title_base, rebuild_coverage
 from conftest import project_with_options
 
 

@@ -5,7 +5,7 @@ opaque IDs; occurrences and files retain their own metadata and identities.
 """
 import copy
 from pathlib import Path
-from matching import score, song_data, title_base, comparison_title
+from musicharbor.matching import score, song_data, title_base, comparison_title
 
 ACCEPTED = {'high', 'confirmed'}
 
@@ -151,7 +151,7 @@ def sync_files(p):
 
 
 def attach_library(p, library, prefs=None):
-    from store import file_version
+    from musicharbor.store import file_version
     def evidence(rec):
         return (copy.deepcopy(rec.get('selected')),rec.get('match_status'),list(rec.get('rejected',[])))
     before={rid:evidence(p['recordings'][rid]) for rid in playlist_ids(p)}
@@ -188,7 +188,7 @@ def attach_library(p, library, prefs=None):
     p['library_folders'] = sorted(set(p.get('library_folders', []) + library.get('folders', [])))
     remap=consolidate(p,prefs)
     if any((rid not in current_shared or remap[rid]!=rid) and value != evidence(p['recordings'][remap[rid]]) for rid,value in before.items()):
-        from matching import rebuild_coverage
+        from musicharbor.matching import rebuild_coverage
         rebuild_coverage(p,prefs or {})
 
 

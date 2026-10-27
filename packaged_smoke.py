@@ -7,7 +7,7 @@ import time
 from urllib.request import urlopen
 
 def main(window=False):
-    import store
+    import musicharbor.store as store
     import desktop
     with tempfile.TemporaryDirectory(prefix='playlist-package-check-') as temporary:
         store.DATA=Path(temporary);store.DB=store.DATA/'test.sqlite3'
@@ -18,7 +18,7 @@ def main(window=False):
                 assert json.load(response)['app']=='musicharbor'
             for resource in ('/','/static/ui.js','/static/workflows.js','/static/ui.css'):
                 with urlopen(desktop.URL+resource,timeout=15) as response: assert response.status==200 and response.read()
-            import backup_schema, export_policy, library_index, planning, portable, retention
+            from musicharbor import backup_schema, export_policy, library_index, planning, portable, retention
             if window:
                 import webview
                 result={}

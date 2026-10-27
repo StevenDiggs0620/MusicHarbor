@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-import store
+import musicharbor.store as store
 import app
 
 

@@ -6,7 +6,7 @@ import json
 import multiprocessing
 import time
 from collections import OrderedDict
-from matching import owned_ids
+from musicharbor.matching import owned_ids
 
 CACHE=OrderedDict()
 
@@ -23,8 +23,8 @@ def prepare(p,options,counts):
 
 def worker(connection,p,options,counts,owned):
     try:
-        from optimizer import calculate
-        from purchase_order import purchase_groups
+        from musicharbor.optimizer import calculate
+        from musicharbor.purchase_order import purchase_groups
         result=calculate(p,**options,play_counts=counts,owned=owned,time_budget=20)
         result['purchase_groups']=purchase_groups(p,result['release_ids'],counts)
         connection.send(('ok',result))

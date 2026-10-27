@@ -10,14 +10,14 @@ import weakref
 import threading
 import copy
 from contextlib import asynccontextmanager
-from progress import report
+from musicharbor.progress import report
 from pathlib import Path
 from urllib.parse import urlencode, urlparse
 
 import httpx
-import store
-from matching import score, song_data, rebuild_coverage
-from identity import decide, consolidate, sync_files, playlist_ids, summary
+import musicharbor.store as store
+from musicharbor.matching import score, song_data, rebuild_coverage
+from musicharbor.identity import decide, consolidate, sync_files, playlist_ids, summary
 
 REDIRECT = 'http://127.0.0.1:8765/api/oauth/callback'
 AUTH_PENDING = {}
@@ -232,7 +232,7 @@ async def import_playlist(p, progress, mode="replace", source_url=None):
                               ownership_override=None, match_status='unmatched', selected=None,
                               candidates=[], rejected=[], source_type='spotify')
         occurrences.append(dict(id=store.uid(), recording_id=rid, source_metadata=metadata.copy()))
-    from playlist_update import merge_playlist
+    from musicharbor.playlist_update import merge_playlist
     result = merge_playlist(p, dict(recordings=recordings, tracks=occurrences), mode)
     if not result['before']: p['name'] = meta.get('name') or p['name']
     p.update(source_url=source_url or p['source_url'], source_type='spotify')
@@ -667,7 +667,7 @@ async def update_and_discover(p, args, progress):
     if args['source']=='spotify':
         message=await import_playlist(p,progress,args['mode'],args['url'])
     else:
-        from playlist_update import merge_playlist
+        from musicharbor.playlist_update import merge_playlist
         result=merge_playlist(p,args['incoming'],args['mode'])
         p.update(source_type='exportify_csv',source_url='',source_filename=args['filename'],
                  import_summary=args['summary'],imported_at=store.now())

@@ -1,4 +1,4 @@
-from purchase_order import purchase_groups
+from musicharbor.purchase_order import purchase_groups
 
 
 def test_mixed_release_types_follow_playlist_count_plays_price_and_names():

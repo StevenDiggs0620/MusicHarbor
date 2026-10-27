@@ -1,8 +1,8 @@
 import asyncio
 import copy
 
-import listening
-from purchase_order import purchase_groups
+import musicharbor.listening as listening
+from musicharbor.purchase_order import purchase_groups
 from conftest import project_with_options
 
 
@@ -50,7 +50,7 @@ def test_custom_window_and_incomplete_cache():
 
 
 def test_window_validation_and_saved_setting(client,monkeypatch):
-    import store
+    import musicharbor.store as store
     monkeypatch.setattr(listening,'start_sync',listening.status)
     for days in (0,3651,1.5):
         assert client.post('/api/listening/connect',json=dict(username='test',days=days)).status_code==422
@@ -92,7 +92,7 @@ def test_listenbrainz_paginates_until_cutoff(isolated_store,monkeypatch):
 
 
 def test_sync_failure_keeps_complete_snapshot_and_hides_credentials(client,monkeypatch):
-    import store
+    import musicharbor.store as store
     store.save_setting('listening_config',dict(provider='lastfm',username='x'))
     store.save_setting('lastfm_key','private-value')
     previous=dict(provider='lastfm',username='x',synced_at=123,listens=[])

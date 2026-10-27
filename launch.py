@@ -18,9 +18,9 @@ def main():
     except OSError:
         raise RuntimeError('Another program is using port 8765. Close it and try again.')
     # Keep the virtual environment and database outside OneDrive / source folders.
-    from branding import data_dir
+    from musicharbor.branding import data_dir
     base=data_dir()
-    from runtime_setup import ensure_runtime
+    from musicharbor.runtime_setup import ensure_runtime
     python=ensure_runtime(base,ROOT)
     print('Opening MusicHarbor in its own window…',flush=True)
     subprocess.run([str(python),str(ROOT/'desktop.py')],cwd=ROOT,check=True)

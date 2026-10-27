@@ -7,11 +7,11 @@ from types import SimpleNamespace
 import httpx
 import pytest
 import app
-import services
-import store
-import matching
-from progress import JobProgress, report
-from purchase_order import purchase_groups
+import musicharbor.services as services
+import musicharbor.store as store
+import musicharbor.matching as matching
+from musicharbor.progress import JobProgress, report
+from musicharbor.purchase_order import purchase_groups
 from conftest import recording, project_with_options
 
 

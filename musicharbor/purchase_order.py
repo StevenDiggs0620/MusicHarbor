@@ -1,6 +1,6 @@
 """Group chosen purchases by their parent release without changing the plan."""
 from collections import defaultdict
-from optimizer import cents
+from musicharbor.optimizer import cents
 
 
 def purchase_groups(p, ids, play_counts=None):

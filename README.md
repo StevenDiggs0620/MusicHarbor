@@ -1,12 +1,12 @@
 # MusicHarbor
 
-**Repository setup:** [GitHub upload instructions](GITHUB_UPLOAD_GUIDE.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Current interface](INTERFACE_CHANGES.md)
+**Project docs:** [GitHub upload instructions](docs/GITHUB_UPLOAD_GUIDE.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Interface notes](docs/INTERFACE_CHANGES.md)
 
 Current version: **1.3.0**. The project code is licensed under the GNU General Public License v3.0 or, at your option, any later version; see [LICENSE](LICENSE). Third-party dependencies retain their respective licenses. Local packaging passed; the current application and regression tests have not been run. GitHub checks are manual until explicitly started.
 
-Formerly Playlist Purchaser. Existing collections, settings, and older backups remain supported; see [rebranding and compatibility notes](REBRANDING.md). New installations use the data paths below; upgrades reuse their existing data folder.
+Formerly Playlist Purchaser. Existing collections, settings, and older backups remain supported; see [rebranding and compatibility notes](docs/REBRANDING.md). New installations use the data paths below; upgrades reuse their existing data folder.
 
-The latest feature update is documented in [FEATURE_IMPROVEMENTS.md](FEATURE_IMPROVEMENTS.md). It adds export-copy preferences, strategy/grouped purchase views, explicit ownership removal, project/full-library backups, scoped library loading, cancellable cached planning, retention controls, consistent Spotify imports, token reuse, and safer runtime packaging. These changes have **not** been run through application, regression, browser, or smoke tests; historical pass counts below refer to earlier revisions.
+The latest feature update is documented in [FEATURE_IMPROVEMENTS.md](docs/FEATURE_IMPROVEMENTS.md). It adds export-copy preferences, strategy/grouped purchase views, explicit ownership removal, project/full-library backups, scoped library loading, cancellable cached planning, retention controls, consistent Spotify imports, token reuse, and safer runtime packaging. These changes have **not** been run through application, regression, browser, or smoke tests; historical pass counts below refer to earlier revisions.
 
 Purchase planning now starts when you choose **Calculate plan**. Cancel a calculation in the operation history. Library pages show 100 files at a time. Backup scope is selected on **Projects**; full-library backups include private file paths and all projects, and restored files require rescanning.
 
@@ -287,15 +287,14 @@ Recommended purchases and Owned Music group entries by release and sort by uniqu
 
 ## Source layout and publishing
 
-- `app.py`: local API, background jobs, import/update endpoints and exports.
-- `playlist_update.py`, `csv_import.py`: source validation, occurrence updates and catalog retention.
-- `identity.py`, `matching.py`, `services.py`: identities, confidence scoring, catalog access and local scanning.
-- `optimizer.py`, `purchase_order.py`: purchase calculations and presentation order.
-- `store.py`, `progress.py`: persistence and progress reporting.
-- `static/ui.*`: browser interface. `tests/`: automated checks with isolated databases and mocked services.
+- `app.py`, `desktop.py`, `launch.py`: application, desktop, and first-run entry points.
+- `musicharbor/`: application modules grouped as a Python package (matching, catalog, storage, planning, imports, and related logic).
+- `build.py`, `packaged_smoke.py`: desktop packaging and opt-in packaged checks.
+- `static/`: browser interface. `tests/`: automated checks with isolated databases and mocked services.
+- `docs/`: project history, feature notes, interface notes, and GitHub setup documentation.
 - `.github/workflows/checks.yml`: cross-platform tests and package builds.
 
-The ignore file excludes local runtimes, databases, secrets, music, exports, and build artifacts. Do not upload project backup JSON files or your application data folder: those can contain personal playlist metadata and local file paths. No credentials or user database are required in the repository. Choose a license before distributing under open-source terms; this repository does not grant a license implicitly.
+The ignore file excludes local runtimes, databases, secrets, music, exports, and build artifacts. Do not upload project backup JSON files or your application data folder: those can contain personal playlist metadata and local file paths. No credentials or user database are required in the repository. MusicHarbor is licensed under the GNU GPL v3 or any later version; see [LICENSE](LICENSE).
 
 The latest local verification passed 122 tests and JavaScript syntax validation. Browser checks used an isolated sample database and mocked Spotify/Store responses to exercise Add, Replace, catalog reuse, and CSV duplicate preservation. Live account access and signed desktop distribution remain separate integration/release checks.
 

@@ -7,7 +7,7 @@ import sys
 import threading
 import time
 
-import store
+from musicharbor import store
 
 URL = 'http://127.0.0.1:8765'
 

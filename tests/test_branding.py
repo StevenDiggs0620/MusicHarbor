@@ -1,5 +1,5 @@
 from pathlib import Path
-import branding
+import musicharbor.branding as branding
 
 
 def test_new_install_and_existing_collection_share_location_policy(tmp_path, monkeypatch):

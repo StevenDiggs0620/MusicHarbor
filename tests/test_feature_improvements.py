@@ -5,14 +5,14 @@ import json
 from datetime import datetime, timezone, timedelta
 import pytest
 import app
-import store
-import services
-import portable
-import planning
-import retention
-import library_index
-from export_policy import ExportOptions, select_files
-from matching import owned_ids
+import musicharbor.store as store
+import musicharbor.services as services
+import musicharbor.portable as portable
+import musicharbor.planning as planning
+import musicharbor.retention as retention
+import musicharbor.library_index as library_index
+from musicharbor.export_policy import ExportOptions, select_files
+from musicharbor.matching import owned_ids
 from conftest import project_with_options, recording
 
 
@@ -87,8 +87,8 @@ def test_full_library_restore_is_additive_and_requires_rescan(isolated_store):
 
 
 def test_priority_queue_and_grouped_view_have_separate_order():
-    from optimizer import calculate
-    from purchase_order import purchase_groups
+    from musicharbor.optimizer import calculate
+    from musicharbor.purchase_order import purchase_groups
     p=project_with_options()
     p['releases']['album']['price']=30
     plan=calculate(p,strategy='songs-per-dollar')

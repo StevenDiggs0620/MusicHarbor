@@ -5,11 +5,11 @@ import time
 import pytest
 
 import app
-import services
-import store
+import musicharbor.services as services
+import musicharbor.store as store
 from conftest import project_with_options, recording
-from identity import attach_library, playlist_ids
-from playlist_update import merge_playlist
+from musicharbor.identity import attach_library, playlist_ids
+from musicharbor.playlist_update import merge_playlist
 
 
 def incoming(*titles):

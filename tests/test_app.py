@@ -1,8 +1,8 @@
 import json
 import pytest
-import store
+import musicharbor.store as store
 import app
-import services
+import musicharbor.services as services
 from conftest import project_with_options
 
 

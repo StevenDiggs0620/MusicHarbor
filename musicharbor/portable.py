@@ -3,8 +3,8 @@ import copy
 import json
 from pathlib import Path
 from pydantic import Field
-import backup_schema as schema
-import store
+from musicharbor import backup_schema as schema
+import musicharbor.store as store
 
 class LocalFile(schema.Source):
     id: str
@@ -52,8 +52,8 @@ def encode(scope,pid):
     return data
 
 def restore_library(blob):
-    from identity import sync_files
-    from matching import rebuild_coverage
+    from musicharbor.identity import sync_files
+    from musicharbor.matching import rebuild_coverage
     if blob.get('version')!=1 or not isinstance(blob.get('projects'),list): raise ValueError('Invalid full-library backup.')
     try:
         library=Library.model_validate(blob['library']).model_dump()

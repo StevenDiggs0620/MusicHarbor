@@ -31,7 +31,7 @@ def build():
     release_id=datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S-%f')
     destination=ROOT/'dist'/'releases'/release_id
     destination.mkdir(parents=True,exist_ok=False)
-    sources=list(ROOT.glob('*.py'))+list((ROOT/'static').glob('*'))
+    sources=list(ROOT.glob('*.py'))+list((ROOT/'musicharbor').rglob('*.py'))+list((ROOT/'static').glob('*'))
     manifest=dict(app='MusicHarbor',release_id=release_id,version='1.3.0',python=sys.version,platform=sys.platform,architecture=platform.machine(),
                   dependencies={d.metadata['Name']:d.version for d in distributions()},
                   sources={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sources if p.is_file()},

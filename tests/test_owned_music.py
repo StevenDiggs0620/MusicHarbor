@@ -1,5 +1,5 @@
 from conftest import project_with_options
-from owned_music import owned_collection
+from musicharbor.owned_music import owned_collection
 
 
 def track(p, rid, cid, price, artist='Artist', number=1, kind='album'):

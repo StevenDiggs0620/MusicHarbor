@@ -2,9 +2,9 @@
 from copy import deepcopy
 from collections import defaultdict
 
-from matching import normalize, owned_ids as effective_owned_ids
-from optimizer import CURRENCIES, cents, release_preference
-from purchase_order import purchase_groups
+from musicharbor.matching import normalize, owned_ids as effective_owned_ids
+from musicharbor.optimizer import CURRENCIES, cents, release_preference
+from musicharbor.purchase_order import purchase_groups
 
 
 def owned_collection(p, play_counts=None):

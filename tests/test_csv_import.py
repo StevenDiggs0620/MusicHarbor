@@ -3,9 +3,9 @@ import io
 from pathlib import Path
 import pytest
 
-import csv_import
-import store
-from matching import score
+import musicharbor.csv_import as csv_import
+import musicharbor.store as store
+from musicharbor.matching import score
 
 EXAMPLE = Path(__file__).parent/'fixtures/exportify-example.csv'
 URI = 'spotify:track:73UQ8oAuZNrLWyPb8TiAuO'
@@ -124,7 +124,7 @@ def test_blank_rows_and_utf16():
 
 
 def test_preview_and_import_do_not_need_spotify(client,monkeypatch):
-    import services
+    import musicharbor.services as services
     async def forbidden(*args,**kwargs): raise AssertionError('CSV import must not call Spotify')
     monkeypatch.setattr(services,'spotify_token',forbidden)
     monkeypatch.setattr(services,'request',forbidden)
