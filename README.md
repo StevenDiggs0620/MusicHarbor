@@ -8,7 +8,8 @@ MusicHarbor runs on your computer. It does not buy, download, rip, or upload mus
 
 - Import playlists from Spotify or an Exportify CSV.
 - Find and review matching songs and releases in an iTunes Store storefront.
-- Build purchase plans using price, coverage, and artist-focused strategies.
+- Build purchase plans using price, coverage, and artist-focused strategies, then sort and filter results by price, listening history, release size, or playlist coverage.
+- Refresh all Store releases, update the known catalog, or check only missing prices and incomplete release details.
 - Track owned recordings and releases across projects.
 - Scan a local music folder and export matching files as M3U or M3U8 playlists.
 - Save, update, back up, and restore playlist projects.

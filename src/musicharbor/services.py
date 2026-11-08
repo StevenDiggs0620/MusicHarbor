@@ -486,15 +486,37 @@ async def discover(p, progress, reuse_existing=False):
     return f"Matching finished: {counts['EXACT']} exact, {counts['HIGH_CONFIDENCE']} high confidence, {counts['NEEDS_REVIEW']} need review, {counts['UNMATCHED']} unmatched. {len(collections)} candidate releases."
 
 
-async def refresh_prices(p, progress):
-    """Find fresh purchase listings for accepted identities without resolving them again."""
+async def refresh_prices(p, progress, mode='all'):
+    """Refresh purchase listings without changing accepted recording identities."""
     prefs = store.setting('preferences', {})
     active_ids = playlist_ids(p)
     resolved = [r for rid,r in p['recordings'].items()
                 if rid in active_ids and r.get('included', True)
                 and r.get('match_status') in ('confirmed', 'high') and r.get('selected')]
-    collections = {str(r['catalog_id']) for r in p['releases'].values() if r['id'].startswith('album:')}
+    albums = [r for r in p['releases'].values() if r['id'].startswith('album:')]
+    collections = {str(r['catalog_id']) for r in albums}
     previous_collections = collections.copy()
+
+    if mode == 'unknown':
+        collections = {str(r['catalog_id']) for r in albums
+                       if r.get('price') is None or r.get('incomplete_tracklist')
+                       or r.get('tracklist_refresh_incomplete')}
+        unknown_track_ids = {str(r['catalog_id']) for r in p['releases'].values()
+                             if r['id'].startswith('track:') and r.get('price') is None}
+        for rec in resolved:
+            selected = rec['selected']
+            if selected.get('trackPrice') is None and selected.get('collectionId'):
+                collections.add(str(selected['collectionId']))
+                if selected.get('trackId') is not None:
+                    unknown_track_ids.add(str(selected['trackId']))
+    else:
+        unknown_track_ids = None
+        if mode == 'known':
+            # Refresh the currently known catalog, including accepted collections
+            # that have not yet been saved as album products.
+            collections.update(str(r['selected']['collectionId']) for r in resolved
+                               if r['selected'].get('collectionId'))
+
     async def find_alternatives(rec):
         selected = rec['selected']
         reference = song_data(selected)
@@ -516,10 +538,14 @@ async def refresh_prices(p, progress):
             if song.get('collectionId'):
                 collections.add(str(song['collectionId']))
         # Deliberately leave selected, candidates, rejection history and identity untouched.
-    await parallel(resolved, find_alternatives, progress, 'alternatives', 'Finding alternative releases')
+    if mode == 'all':
+        await parallel(resolved, find_alternatives, progress, 'alternatives', 'Finding alternative releases')
+    else:
+        await parallel([], find_alternatives, progress, 'alternatives', 'Finding alternative releases')
     loaded_tracks=await read_releases(p,collections,progress,True)
     tracks=[r for r in list(p['releases'].values()) if r['id'].startswith('track:')
-            and str(r['catalog_id']) not in loaded_tracks]
+            and str(r['catalog_id']) not in loaded_tracks
+            and (unknown_track_ids is None or str(r['catalog_id']) in unknown_track_ids)]
     async def refresh_track(r):
         data=await apple('lookup',dict(id=r['catalog_id'],country=p['storefront']),True)
         song=next((x for x in data.get('results',[]) if x.get('kind')=='song'),None)
@@ -529,6 +555,12 @@ async def refresh_prices(p, progress):
     await finish_coverage(p,progress)
     p['refreshed'] = store.now()
     new_releases = sum('album:'+cid in p['releases'] for cid in collections-previous_collections)
+    if mode == 'unknown' and not collections and not tracks:
+        return 'No missing release prices or incomplete release details were found.'
+    if mode == 'known':
+        return f'Known releases and prices refreshed. Existing recording matches were preserved.'
+    if mode == 'unknown':
+        return 'Missing release prices and incomplete release details refreshed. Existing recording matches were preserved.'
     return f'Releases and prices refreshed. {new_releases} new releases found for {len(resolved)} identified recordings. Existing recording matches were preserved.'
 
 

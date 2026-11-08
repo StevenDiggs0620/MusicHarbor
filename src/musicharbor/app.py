@@ -172,6 +172,9 @@ async def create_project(body:CreateProject):
 class Rename(BaseModel):
     name:str=Field(min_length=1,max_length=200)
 
+class RefreshOptions(BaseModel):
+    mode:Literal['all','known','unknown']='all'
+
 @app.patch('/api/projects/{pid}')
 async def rename_project(pid:str,body:Rename):
     return await mutate(pid,save_rename,body)
@@ -222,6 +225,8 @@ async def start_job(pid, operation, args=None):
                     report(progress,'releases','Reading selected release',1,1)
                     await services.finish_coverage(p,progress)
                     result='Selected release loaded. Your confirmed match is saved.'
+                elif operation is services.refresh_prices:
+                    result=await operation(p,progress,args or 'all')
                 else: result=await operation(p,progress)
                 report(progress,'save','Saving results',0,1)
                 if operation!='plan': await services.run_blocking(store.save_project,p,True)
@@ -313,7 +318,8 @@ async def update_csv_playlist(pid:str, request:Request, mode:Literal['add','repl
 async def discover(pid:str): return await start_job(pid,services.discover)
 
 @app.post('/api/projects/{pid}/refresh')
-async def refresh(pid:str): return await start_job(pid,services.refresh_prices)
+async def refresh(pid:str,body:RefreshOptions=RefreshOptions()):
+    return await start_job(pid,services.refresh_prices,body.mode)
 
 @app.get('/api/jobs/{jid}')
 async def job_status(jid:str):

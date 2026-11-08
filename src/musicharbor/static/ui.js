@@ -75,7 +75,7 @@ async function selectProject(id) {
   if(selection!==selectionVersion)return;
   project=loaded;
   libraryPage={files:[],recordings:{},total:0,next_offset:null};
-  selectedRecording=null; currentPlan=null; cheapestPlan=null;calculatedOptions=null;reviewFilter='needs';planPending=false;comparisonPending=false;++calculationGeneration; query='';
+  selectedRecording=null; currentPlan=null; cheapestPlan=null;calculatedOptions=null;reviewFilter='needs';planPending=false;comparisonPending=false;++calculationGeneration; query='';purchaseDisplay={sort:'default',minPlays:'',minReleaseTracks:'',minPlaylistSongs:''};purchaseView='grouped';
   if(id) localStorage.setItem('pp-project',id); else localStorage.removeItem('pp-project');
   $('#project-picker').value=id || '';
   await render();
@@ -354,7 +354,9 @@ const actions={
   'disconnect-listening':async()=>{settings.listening=await api('/api/listening/disconnect','POST');await reload();},
   'review-local':id=>reviewLocal(id),
   'confirm-local':async (id,button)=>{await api(endpoint(`/files/${enc(id)}/match`),'POST',{track_id:button.dataset.track,action:'confirm'});$('#dialog').close();await reload();notify('Local song identified and marked owned.');},
-  discover:()=>beginJob('discover'),reimport:()=>beginJob('import'),'refresh-prices':()=>beginJob('refresh'),
+  discover:()=>beginJob('discover'),reimport:()=>beginJob('import'),
+  'refresh-prices':()=>modal(`<h2>Update releases and prices</h2><p>Choose how much of the Store catalog to check. Existing recording matches and review decisions stay unchanged.</p><form id="refresh-form" class="stack"><label class="check"><input type="radio" name="mode" value="all" checked><span><strong>Find new alternatives and refresh all releases</strong><br><small>Search every matched song for new releases, then update release details and prices. This is the most thorough option.</small></span></label><label class="check"><input type="radio" name="mode" value="known"><span><strong>Refresh known releases and prices</strong><br><small>Update the catalog already saved for this playlist without searching for new releases.</small></span></label><label class="check"><input type="radio" name="mode" value="unknown"><span><strong>Check missing prices and incomplete releases</strong><br><small>Refresh only releases with no saved price or an incomplete track list, plus individual songs with no saved price.</small></span></label><button type="submit">Start update</button></form>`),
+  'purchase-display-reset':()=>{purchaseDisplay={sort:'default',minPlays:'',minReleaseTracks:'',minPlaylistSongs:''};renderPlanResult();},
   'own-recording':id=>updateRecording(id,{ownership_override:!project.recordings[id].effective_owned}),
   'reset-ownership':id=>updateRecording(id,{reset_override:true,owned:false}),
   include:id=>updateRecording(id,{included:!project.recordings[id].included}),
@@ -413,7 +415,12 @@ document.addEventListener('submit',async event=>{
   form.dataset.submitting='true';
   const f=new FormData(form);const button=event.submitter || form.querySelector('button[type="submit"]');if(button)button.disabled=true;
   try {
-    if(form.id==='listening-form'){
+    if(form.id==='purchase-display-form'){
+      purchaseDisplay={sort:String(f.get('sort')||'default'),minPlays:String(f.get('minPlays')||''),minReleaseTracks:String(f.get('minReleaseTracks')||''),minPlaylistSongs:String(f.get('minPlaylistSongs')||'')};
+      renderPlanResult();
+    } else if(form.id==='refresh-form'){
+      await beginJob('refresh',{mode:String(f.get('mode')||'all')});$('#dialog').close();
+    } else if(form.id==='listening-form'){
       settings.listening=await api('/api/listening/connect','POST',{provider:f.get('provider'),username:f.get('username'),days:Number(f.get('days')),api_key:f.get('api_key')||'',token:f.get('token')||''});
       form.querySelectorAll('input[type=password]').forEach(input=>input.value='');
       renderListeningStatus();watchListening();await refreshJobs();
