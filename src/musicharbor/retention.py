@@ -2,12 +2,17 @@
 import json
 import time
 from datetime import datetime, timezone, timedelta
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 class Retention(BaseModel):
     job_days: int = Field(default=30,ge=1,le=3650)
     price_days: int = Field(default=365,ge=1,le=3650)
     export_count: int = Field(default=100,ge=1,le=10000)
+
+def policy():
+    import musicharbor.store as store
+    try: return Retention.model_validate(store.setting('retention',{}))
+    except ValidationError: return Retention()
 
 def trim_project(p, policy):
     cutoff=(datetime.now(timezone.utc)-timedelta(days=policy.price_days)).isoformat()
@@ -16,8 +21,8 @@ def trim_project(p, policy):
 
 def cleanup():
     import musicharbor.store as store
-    policy=Retention.model_validate(store.setting('retention',{}))
-    cutoff=(datetime.now(timezone.utc)-timedelta(days=policy.job_days)).isoformat()
+    settings=policy()
+    cutoff=(datetime.now(timezone.utc)-timedelta(days=settings.job_days)).isoformat()
     with store.connection() as c:
         c.execute('DELETE FROM api_cache WHERE expires<=?',(time.time(),))
         for row in c.execute('SELECT id,project,payload FROM jobs').fetchall():
@@ -27,5 +32,5 @@ def cleanup():
             if orphan or job.get('finished',job.get('created',''))<cutoff:
                 c.execute('DELETE FROM jobs WHERE id=?',(row['id'],))
         for row in c.execute('SELECT id,payload FROM projects').fetchall():
-            p=json.loads(row['payload']);trim_project(p,policy)
+            p=json.loads(row['payload']);trim_project(p,settings)
             c.execute('UPDATE projects SET payload=? WHERE id=?',(json.dumps(p,ensure_ascii=False),row['id']))

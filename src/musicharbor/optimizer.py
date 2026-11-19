@@ -2,7 +2,7 @@
 import math
 import re
 import time
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from musicharbor.matching import rec_owned, normalize, owned_ids
 from musicharbor.identity import playlist_ids
 
@@ -16,10 +16,23 @@ def cents(price):
         if not math.isfinite(value) or value < 0:
             return None
         return int((Decimal(str(price)) * 100).quantize(Decimal('1'), rounding=ROUND_HALF_UP))
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, OverflowError, InvalidOperation):
         return None
 
 def calculate(p, strategy='cheapest', purchase_penalty=1.0, budget=None, artist='', play_counts=None, owned=None, time_budget=20):
+    if strategy not in ('cheapest','fewest','best-value','most-songs','songs-per-dollar','artist'):
+        raise ValueError('Choose a purchase strategy.')
+    if strategy=='artist':
+        artist=str(artist or '').strip()
+        if not artist: raise ValueError('Enter an artist to focus on.')
+    try:
+        purchase_penalty=float(purchase_penalty)
+        if not math.isfinite(purchase_penalty) or purchase_penalty<0: raise ValueError()
+        if budget is not None:
+            budget=float(budget)
+            if not math.isfinite(budget) or budget<0: raise ValueError()
+    except (TypeError, ValueError, OverflowError):
+        raise ValueError('Budget and purchase penalty must be finite amounts of zero or greater.') from None
     deadline=time.monotonic()+time_budget
     owned=owned_ids(p) if owned is None else owned
     playlist = playlist_ids(p)

@@ -8,8 +8,8 @@ const country = {us:'United States',ca:'Canada',gb:'United Kingdom'};
 let project = null, projects = [], settings = {}, selectedRecording = null;
 let currentPlan = null, cheapestPlan = null, renderVersion = 0, selectionVersion = 0;
 let candidateLimits = new Map();
-function candidatePage(items, key) { return items.slice(0,candidateLimits.get(key)||100); }
-function moreCandidates(items, key) { return items.length>(candidateLimits.get(key)||100)?`<button type="button" class="secondary" data-action="more-candidates" data-id="${esc(key)}">Show more matches (${items.length} total)</button>`:''; }
+function candidatePage(items, key) { return items.slice(0,candidateLimits.get(key)||5); }
+function moreCandidates(items, key) { return items.length>(candidateLimits.get(key)||5)?`<button type="button" class="secondary" data-action="more-candidates" data-id="${esc(key)}">Show more matches (${items.length} total)</button>`:''; }
 function captureDrafts() {
   return [...document.querySelectorAll('#main form, #export-options')].filter(el=>el.dataset.dirty==='true'||el.dataset.submitting==='true'||[...el.querySelectorAll('input[type=file]')].some(input=>input.files.length)).map(el=>({id:el.id,element:el}));
 }
@@ -19,7 +19,19 @@ let query = '', reviewAll = false;
 let csvDraft = null;
 let csvPreviewVersion = 0;
 let conversion = {currency:'',rate:''};
-try { conversion = JSON.parse(localStorage.getItem('pp-conversion') || 'null') || conversion; } catch {}
+function storageGet(key, session=false) {
+  try { return (session ? window.sessionStorage : window.localStorage).getItem(key); }
+  catch { return null; }
+}
+function storageSet(key, value, session=false) {
+  try { (session ? window.sessionStorage : window.localStorage).setItem(key, value); }
+  catch { /* Persistence is optional; the current session can continue. */ }
+}
+function storageRemove(key, session=false) {
+  try { (session ? window.sessionStorage : window.localStorage).removeItem(key); }
+  catch { /* Persistence is optional; the current session can continue. */ }
+}
+try { conversion = JSON.parse(storageGet('pp-conversion') || 'null') || conversion; } catch {}
 
 function safeURL(value, provider='store') {
   try { const u = new URL(value); const hosts = provider === 'spotify' ? ['open.spotify.com'] : ['music.apple.com','itunes.apple.com']; return u.protocol === 'https:' && hosts.includes(u.hostname) ? u.href : ''; } catch { return ''; }
@@ -76,7 +88,7 @@ async function selectProject(id) {
   project=loaded;
   libraryPage={files:[],recordings:{},total:0,next_offset:null};
   selectedRecording=null; currentPlan=null; cheapestPlan=null;calculatedOptions=null;reviewFilter='needs';planPending=false;comparisonPending=false;++calculationGeneration; query='';purchaseDisplay={sort:'default',minPlays:'',minReleaseTracks:'',minPlaylistSongs:''};purchaseView='grouped';
-  if(id) localStorage.setItem('pp-project',id); else localStorage.removeItem('pp-project');
+  if(id) storageSet('pp-project',id); else storageRemove('pp-project');
   $('#project-picker').value=id || '';
   await render();
   if(selection!==selectionVersion)return;
@@ -349,7 +361,7 @@ async function downloadExport() {
 }
 const actions={
   ...guidedActions,
-  'more-candidates':async key=>{candidateLimits.set(key,(candidateLimits.get(key)||100)+100);if(key.startsWith('file:'))reviewLocal(key.slice(5));else await render(captureDrafts());},
+  'more-candidates':async key=>{candidateLimits.set(key,(candidateLimits.get(key)||5)+5);if(key.startsWith('file:'))reviewLocal(key.slice(5));else await render(captureDrafts());},
   'sync-listening':async()=>{settings.listening=await api('/api/listening/sync','POST');renderListeningStatus();watchListening();},
   'disconnect-listening':async()=>{settings.listening=await api('/api/listening/disconnect','POST');await reload();},
   'review-local':id=>reviewLocal(id),
@@ -473,7 +485,7 @@ document.addEventListener('submit',async event=>{
       notify('Searching the Store…');const result=await api(endpoint(`/recordings/${enc(selectedRecording)}/search`),'POST',{term:f.get('term')});notify(`Found ${result.count} Store results.`);await reload();
     } else if(form.id==='plan-form'){
       planOptions={strategy:f.get('strategy'),budget:!f.has('budget')||f.get('budget')===''?null:Number(f.get('budget')),purchase_penalty:Number(f.get('purchase_penalty')),artist:f.get('artist')||''};
-      conversion={currency:f.get('display_currency'),rate:f.get('exchange_rate')};localStorage.setItem('pp-conversion',JSON.stringify(conversion));await calculatePlan();
+      conversion={currency:f.get('display_currency'),rate:f.get('exchange_rate')};storageSet('pp-conversion',JSON.stringify(conversion));await calculatePlan();
     } else if(form.id==='local-search-form'){await api(endpoint(`/files/${enc(form.dataset.id)}/search`),'POST',{term:f.get('term')});await loadLibrary(libraryPage.offset||0);reviewLocal(form.dataset.id);}
     else if(form.id==='scan-form')await beginJob('scan',{folder:f.get('folder')});
     else if(form.classList.contains('local-match-form')){await api(endpoint(`/files/${enc(form.dataset.id)}`),'PATCH',{recording_id:f.get('recording_id')||null});notify('Local file match saved.');await reload();}
@@ -530,4 +542,4 @@ document.addEventListener('keydown',event=>{
     if(key==='o'&&selectedRecording){event.preventDefault();actions['own-recording'](selectedRecording).catch(e=>notify(e.message,true));}
   }
 });
-(async()=>{try{settings=await api('/api/settings');await loadProjects();const saved=localStorage.getItem('pp-project');await selectProject(projects.some(p=>p.id===saved)?saved:projects[0]?.id||'');const oauth=new URLSearchParams(location.search).get('oauth');if(oauth){notify(oauth==='connected'?'Spotify connected. You can import your playlist.':'Spotify sign-in was cancelled.');history.replaceState(null,'',location.pathname+location.hash);}}catch(e){notify(e.message,true);$('#main').innerHTML=empty('Could not open the workspace','Reload the page or restart the app.');}})();
+(async()=>{try{settings=await api('/api/settings');await loadProjects();const saved=storageGet('pp-project');await selectProject(projects.some(p=>p.id===saved)?saved:projects[0]?.id||'');const oauth=new URLSearchParams(location.search).get('oauth');if(oauth){notify(oauth==='connected'?'Spotify connected. You can import your playlist.':'Spotify sign-in was cancelled.');history.replaceState(null,'',location.pathname+location.hash);}}catch(e){notify(e.message,true);$('#main').innerHTML=empty('Could not open the workspace','Reload the page or restart the app.');}})();

@@ -14,7 +14,7 @@ function buyTabs(page){
 function guidedImport(){
   return heading('Add your playlist','Choose how to bring your songs into the app.','GET STARTED')+journey('import')+
     `<section class="panel"><h2>How would you like to add it?</h2><div class="choice-grid"><button class="choice" data-action="choose-import" data-id="playlist-file"><strong>Import a playlist file</strong><span>Use an Exportify CSV. No Spotify developer setup required.</span></button><button class="choice" data-action="choose-import" data-id="spotify-import"><strong>Use Spotify directly</strong><span>Use a saved connection or set up Spotify access.</span></button></div></section>
-    <details class="panel" id="playlist-file" open><summary>Import a playlist file</summary><details class="help-disclosure"><summary>How do I get an Exportify file?</summary><ol><li>Open <a href="https://exportify.net" target="_blank" rel="noopener noreferrer">Exportify</a> and sign in there.</li><li>Export the playlist you want as a CSV file.</li><li>Choose the downloaded file below and check its preview.</li></ol><p>Already have a CSV? Start below. Your original file stays unchanged.</p></details>${csvImportPanel()}</details>
+    <details class="panel" id="playlist-file"><summary>Import a playlist file</summary><details class="help-disclosure"><summary>How do I get an Exportify file?</summary><ol><li>Open <a href="https://exportify.net" target="_blank" rel="noopener noreferrer">Exportify</a> and sign in there.</li><li>Export the playlist you want as a CSV file.</li><li>Choose the downloaded file below and check its preview.</li></ol><p>Already have a CSV? Start below. Your original file stays unchanged.</p></details>${csvImportPanel()}</details>
     <details class="panel" id="spotify-import"><summary>Import directly from Spotify</summary><p>${settings.connected?'Your account is connected. Paste the playlist link below.':'This route needs Spotify developer setup. File import above is available without it.'}</p><a class="button secondary" href="#settings">${settings.connected?'Connection settings':'Set up Spotify connection'}</a><form id="import-form" class="stack spaced"><label>Spotify playlist link<input name="url" required maxlength="2000" placeholder="https://open.spotify.com/playlist/…"></label><label>Purchase country<select name="storefront">${optionsStore(settings.storefront)}</select></label><button type="submit">Import from Spotify</button></form></details>
     ${project?`<details class="panel"><summary>Add to or replace the selected playlist instead</summary><a class="button secondary" href="#update">Update selected playlist</a></details>`:''}`;
 }
@@ -96,7 +96,7 @@ const guidedActions={
   'retry-export-preview':()=>refreshExportPreview(),
   'purchase-view':(id)=>{purchaseView=id;renderPlanResult();},
   'choose-import':id=>{const panel=document.getElementById(id);panel.open=true;panel.querySelector('summary').focus();panel.scrollIntoView({block:'start',behavior:'smooth'});},
-  'skip-library':async()=>{sessionStorage.setItem('pp-library-skipped:'+project.id,'yes');await render();},
+  'skip-library':async()=>{storageSet('pp-library-skipped:'+project.id,'yes',true);await render();},
   'show-versions':()=>{const panel=$('#other-versions');panel.open=true;panel.querySelector('summary').focus();},
   'defer-match':async id=>{deferredMatches.add(project.id+':'+id);selectedRecording=null;await render();},
   'resume-review':async()=>{deferredMatches=new Set([...deferredMatches].filter(id=>!id.startsWith(project.id+':')));await render();},

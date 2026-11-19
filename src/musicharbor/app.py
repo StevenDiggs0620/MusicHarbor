@@ -13,7 +13,7 @@ from pathlib import Path
 from fastapi import FastAPI, Request, Query, Depends
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Literal
 from musicharbor import backup_schema, csv_import, library_index, listening, planning, portable, retention, services, store
 from musicharbor.export_policy import ExportOptions, select_files
@@ -41,10 +41,13 @@ async def lifespan(app):
     async def maintain():
         while True:
             await asyncio.sleep(3600)
-            await services.run_blocking(retention.cleanup)
-            kept=await services.run_blocking(retained_job_ids)
-            for jid,job in list(JOBS.items()):
-                if job['status'] not in ('running','queued') and jid not in kept: JOBS.pop(jid,None)
+            try:
+                await services.run_blocking(retention.cleanup)
+                kept=await services.run_blocking(retained_job_ids)
+                for jid,job in list(JOBS.items()):
+                    if job['status'] not in ('running','queued') and jid not in kept: JOBS.pop(jid,None)
+            except Exception:
+                LOG.exception('Background retention cleanup failed')
     cleanup_task=asyncio.create_task(maintain())
     yield
     tasks = [j['task'] for j in JOBS.values() if j.get('task') and not j['task'].done()]
@@ -134,7 +137,8 @@ async def import_csv(request:Request, name:str=Query(default='',max_length=200),
 def available(pid, load=True):
     if SETTINGS_BUSY: raise ValueError('Settings are being updated. Please wait for saving to finish.')
     if pid in BUSY: raise ValueError('This project has an operation running. Wait for it to finish or cancel it first.')
-    return store.get(pid) if load else None
+    if load: return store.get(pid)
+    if not store.project_exists(pid): raise ValueError('Project not found. Select an existing project.')
 
 async def mutate(pid, function, *args):
     available(pid,False); BUSY.add(pid)
@@ -166,8 +170,9 @@ class CreateProject(BaseModel):
 @app.post('/api/projects')
 async def create_project(body:CreateProject):
     if body.storefront not in CURRENCIES: raise ValueError('Choose United States, Canada, or United Kingdom.')
-    if body.url: services.playlist_id(body.url)
-    return await services.run_blocking(store.put,store.new_project(body.name,body.storefront,body.url))
+    url=body.url.strip()
+    if url: services.playlist_id(url)
+    return await services.run_blocking(store.put,store.new_project(body.name.strip() or 'Untitled playlist',body.storefront,url))
 
 class Rename(BaseModel):
     name:str=Field(min_length=1,max_length=200)
@@ -551,6 +556,13 @@ def save_match_decision(pid,rid,body):
 class Search(BaseModel):
     term:str=Field(min_length=1,max_length=300)
 
+    @field_validator('term')
+    @classmethod
+    def require_search_text(cls, value):
+        value=value.strip()
+        if not value: raise ValueError('Enter a song title or artist to search for.')
+        return value
+
 @app.post('/api/projects/{pid}/recordings/{rid}/search')
 async def manual_search(pid:str,rid:str,body:Search):
     available(pid,False)
@@ -588,6 +600,9 @@ class PlanRequest(BaseModel):
 @app.post('/api/projects/{pid}/plan/start')
 async def start_plan(pid:str,body:PlanRequest):
     if body.strategy not in ('cheapest','fewest','best-value','most-songs','songs-per-dollar','artist'): raise ValueError('Choose a purchase strategy.')
+    if body.strategy=='artist':
+        body.artist=body.artist.strip()
+        if not body.artist: raise ValueError('Enter an artist to focus on.')
     return await start_job(pid,'plan',body.model_dump())
 
 @app.post('/api/projects/{pid}/plan')

@@ -94,8 +94,8 @@ def new_project(name='Untitled playlist', storefront='us', url=''):
                 local_files=[], exports=[], price_history=[], library_folders=[])
 
 def put(p):
-    from musicharbor.retention import Retention, trim_project
-    trim_project(p,Retention.model_validate(setting('retention',{})))
+    from musicharbor.retention import policy, trim_project
+    trim_project(p,policy())
     payload=copy.deepcopy({k:v for k,v in p.items() if not k.startswith('_')})
     playlist={t['recording_id'] for t in p['tracks']}
     keep={rid for rid,r in p['recordings'].items() if rid in playlist or r.get('playlist_seen') or not r.get('library_identity')}
@@ -134,6 +134,10 @@ def projects():
     with connection() as c:
         rows = c.execute('SELECT id,name,updated FROM projects ORDER BY updated DESC').fetchall()
     return [dict(r) for r in rows]
+
+def project_exists(pid):
+    with connection() as c:
+        return c.execute('SELECT 1 FROM projects WHERE id=?', (pid,)).fetchone() is not None
 
 def delete(pid):
     with connection() as c:

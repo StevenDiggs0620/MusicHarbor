@@ -30,8 +30,12 @@ wait_delay = asyncio.sleep
 
 def performance():
     saved=store.setting('performance', {})
-    return dict(api_concurrency=max(1,min(6,int(saved.get('api_concurrency',3)))),
-                background_jobs=max(1,min(4,int(saved.get('background_jobs',2)))))
+    if not isinstance(saved,dict): saved={}
+    def bounded(name, default, maximum):
+        try: return max(1,min(maximum,int(saved.get(name,default))))
+        except (TypeError,ValueError,OverflowError): return default
+    return dict(api_concurrency=bounded('api_concurrency',3,6),
+                background_jobs=bounded('background_jobs',2,4))
 
 
 def network():
@@ -64,6 +68,8 @@ async def apple_slot(state):
 
 
 async def request(method, url, **kwargs):
+    host=urlparse(url).hostname or ''
+    spotify_request=host == 'spotify.com' or host.endswith('.spotify.com')
     for attempt in range(4):
         try:
             state=network()
@@ -92,9 +98,13 @@ async def request(method, url, **kwargs):
             await asyncio.sleep(2 ** attempt)
             continue
         if response.status_code == 401:
-            raise ValueError('Authorization expired or credentials were rejected. Reconnect Spotify in Settings.')
+            if spotify_request:
+                raise ValueError('Authorization expired or credentials were rejected. Reconnect Spotify in Settings.')
+            raise ValueError('The music service rejected the request (401). Try again later.')
         if response.status_code in (403, 404):
-            raise ValueError('This resource is unavailable. For Spotify, connect your account and use a playlist you own or collaborate on. Check the app’s allowed users and Premium requirements.')
+            if spotify_request:
+                raise ValueError('This Spotify resource is unavailable. Connect your account and use a playlist you own or collaborate on. Check the app’s allowed users and Premium requirements.')
+            raise ValueError('This catalog resource is unavailable. Check the release details and try again.')
         if response.is_error:
             raise ValueError(f'The music service rejected the request ({response.status_code}). Check your settings and retry.')
         try:
@@ -173,6 +183,7 @@ async def _spotify_token():
 
 
 def playlist_id(url):
+    url=(url or '').strip()
     if re.fullmatch(r'spotify:playlist:[A-Za-z0-9]{22}', url):
         return url.split(':')[-1]
     parsed = urlparse(url)

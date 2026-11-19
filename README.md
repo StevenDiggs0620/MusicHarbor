@@ -2,6 +2,8 @@
 
 MusicHarbor is a desktop app for turning Spotify playlists into practical music purchase plans and playlists of files in your own music library. Import a playlist, find matching releases in the iTunes Store, compare purchase options, track what you own, and export a playlist for your local player.
 
+**AI disclosure:** MusicHarbor is an AI-generated program.
+
 MusicHarbor runs on your computer. It does not buy, download, rip, or upload music.
 
 ## Features
